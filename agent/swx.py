@@ -30,7 +30,7 @@ def mode() -> str:
         return "mock"
     if _env("SWX_MODE") == "live":
         return "live"
-    return "live" if _sdk_available() else "mock"
+    return "live" if (_sdk_available() or _cli_present()) else "mock"
 
 
 def _sdk_available() -> bool:
@@ -88,13 +88,18 @@ def execute(
             _idempotency_store[key] = body
         return {"ok": True, "body": body, "mode": "mock", "error": ""}
 
-    payload = dict(params)
+    args = {k: v for k, v in params.items()
+            if k.lower() not in ("authorization", "idempotency-key", "params")}
+    # nested {"params": {...}} envelopes (doc §2 example) are unwrapped
+    if isinstance(params.get("params"), dict):
+        args.update(params["params"])
+    headers: dict[str, str] = {}
     if write and key:
-        payload["Idempotency-Key"] = key
+        headers["Idempotency-Key"] = key  # E10 — carried as a request header
     last_error = ""
     for attempt in (1, 2):  # one automatic retry for transient failures (E5)
         try:
-            body = _live_execute(canonical_id, payload)
+            body = _live_execute(canonical_id, args, headers)
             if key:
                 _idempotency_store[key] = body
             return {"ok": True, "body": body, "mode": "live", "error": ""}
@@ -105,28 +110,45 @@ def execute(
     return {"ok": False, "body": {}, "mode": "live", "error": last_error}
 
 
-def _live_execute(canonical_id: str, payload: dict) -> dict:
-    """Best-effort live execution: Runtime SDK first, then the `swy` CLI."""
-    try:
-        from swytchcode_runtime import Runtime  # type: ignore  # pragma: no cover
+def _live_execute(canonical_id: str, args: dict, headers: dict) -> dict:
+    """Runtime SDK if installed, else the `swy` CLI kernel.
 
-        rt = Runtime()  # type: ignore[call-arg]  # pragma: no cover
-        result = rt.tools.execute(canonical_id, payload)  # pragma: no cover
-        if isinstance(result, dict):  # pragma: no cover
-            return result
-        return {"result": result}  # pragma: no cover
-    except ImportError:
-        pass
-    # CLI fallback: `swy exec <id> --json '<payload>'`
+    CLI form (verified against `swy exec --help`, swytchcode v2.23.7):
+      stdin : {"tool": "<canonical_id>", "args": {...}}  |  swy exec [flags]
+      flags : --json (normalized output) · --header k=v (repeatable)
+    The kernel is offline-capable (reads tooling.json + fetched bundles only);
+    credentials come from `swy auth connect <provider>`, not from this code."""
+    if _sdk_available():  # pragma: no cover - depends on local install
+        try:
+            from swytchcode_runtime import Runtime  # type: ignore
+
+            rt = Runtime()  # type: ignore[call-arg]
+            result = rt.tools.execute(canonical_id, {"args": args, "headers": headers})
+            return result if isinstance(result, dict) else {"result": result}
+        except ImportError:
+            pass
+
+    cmd = ["swy", "exec", "--json"]
+    for k, v in headers.items():
+        cmd += ["--header", f"{k}={v}"]
     proc = subprocess.run(  # noqa: S603
-        ["swy", "exec", canonical_id, "--json", json.dumps(payload)],
+        cmd,
+        input=json.dumps({"tool": canonical_id, "args": args}),
         capture_output=True,
         text=True,
         timeout=60,
     )
     if proc.returncode != 0:
-        raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or "swy exec failed")
-    return json.loads(proc.stdout)
+        err = proc.stderr.strip() or proc.stdout.strip() or "swy exec failed"
+        if "not found in any fetched providers" in err:
+            err += " — run ./scripts/setup.sh (swy get <provider>) first"
+        if "Failed to fetch provider bundles" in err:
+            err += " — registry unreachable; fetch bundles once with ./scripts/setup.sh"
+        raise RuntimeError(err)
+    out = json.loads(proc.stdout)
+    if isinstance(out, dict) and out.get("_simulated"):  # --demo fallback path
+        out["mode_note"] = "simulated by swy --demo"
+    return out
 
 
 def live(toolkit: str) -> bool:

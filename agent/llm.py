@@ -11,6 +11,13 @@ import os
 import re
 from typing import Any, Callable
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()  # .env → os.environ (never overrides already-set vars)
+except ImportError:
+    pass
+
 warnings: list[str] = []  # surfaced to the UI as amber log events
 
 
@@ -48,12 +55,12 @@ def _call(provider: str, system: str, user: str) -> Any:
         from langchain_google_genai import ChatGoogleGenerativeAI
 
         model = ChatGoogleGenerativeAI(
-            model=os.getenv("GEMINI_MODEL", "gemini-2.0-flash"), temperature=0
+            model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"), temperature=0
         )
     elif provider == "groq":
         from langchain_groq import ChatGroq
 
-        model = ChatGroq(model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"), temperature=0)
+        model = ChatGroq(model=os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"), temperature=0)
     else:
         raise RuntimeError(f"unknown provider {provider}")
     from langchain_core.messages import HumanMessage, SystemMessage

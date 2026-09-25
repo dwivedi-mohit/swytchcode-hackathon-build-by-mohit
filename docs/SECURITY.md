@@ -41,7 +41,7 @@ The app has exactly **two actors**. This is the core of the security model:
 | **Write** Notion rows | ✅ | enabled tools (low-risk, reversible) |
 | **Write** Jira issues | ✅ | enabled tools (low-risk, reversible) |
 | **Write** Slack message to `#finance-ops` | ✅ | enabled tools (visible, reversible by delete) |
-| **Write** PayPal (create/send invoice) | ⚠️ **Only after human approval** | **`policies.json` approval gate + UI Approve button (both)** |
+| **Write** PayPal (create/send invoice) | ⚠️ **Only after human approval** | **kernel policy `REQUIRES_APPROVAL` (`.swytchcode/integrations/policies.json`, `swy policy validate` ✓) + UI Approve button (both)** |
 | Send email | ❌ not even enabled | tool never added to `tooling.json` |
 | Read `.env` / print secrets | ❌ | code never exposes secrets to state, trace, or SSE |
 | Touch any non-sandbox PayPal endpoint | ❌ | `PAYPAL_ENV=sandbox` + live path not implemented |
@@ -136,7 +136,9 @@ inline message, and the run degrades instead of dying.
 ## 6. Audit & Evidence (for Q&A)
 
 - **`tooling.json`** committed → shows exactly which toolkits/tools are enabled.
-- **`policies.json`** committed → shows the PayPal approval rule (verifiable by judges).
+- **`.swytchcode/integrations/policies.json`** (kernel-enforced, `swy policy list`) + evidence
+  copy `.swytchcode/policies.json` → PayPal approval / Gmail read-only / no live money
+  (verifiable by judges with `swy policy validate`).
 - **`swy audit`** available live → proves every call went through Swytchcode's execution layer.
 - **Full `trace`** per run, optionally dumped to JSON → screenshots for README.
 - **Redaction:** `Authorization` fields rendered as `***` in trace/UI before display.

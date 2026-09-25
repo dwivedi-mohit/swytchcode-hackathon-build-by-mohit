@@ -49,8 +49,10 @@ def main() -> int:
     SHOTS.mkdir(parents=True, exist_ok=True)
     DEMO.mkdir(parents=True, exist_ok=True)
 
-    env = {**os.environ, "MOCK_LLM": "1", "MOCK_SWX": "1", "GMAIL_ENABLED": "0",
+    env = {**os.environ, "MOCK_SWX": "1", "GMAIL_ENABLED": "0",
            "PORT": PORT, "HOST": "127.0.0.1"}
+    # LIVE_LLM=1 runs the same E2E against real Gemini/Groq (keys from .env)
+    env["MOCK_LLM"] = "0" if os.getenv("LIVE_LLM") == "1" else "1"
     env.pop("AUTO_APPROVE", None)  # the UI must perform a real approval
     env.pop("APPROVAL_TIMEOUT_S", None)
     server = subprocess.Popen(
@@ -101,11 +103,11 @@ def run_browser() -> int:
         page.screenshot(path=str(SHOTS / "02-prompt-filled.png"))
 
         page.click("#runBtn")
-        page.wait_for_selector(".card", timeout=15000)
+        page.wait_for_selector(".card", timeout=60000)
         check(page.locator("#runBtn").is_disabled(), "Run disabled while streaming")
 
         # 3 — cards stream in
-        page.wait_for_selector(".card.approval", timeout=30000)
+        page.wait_for_selector(".card.approval", timeout=120000)
         check(page.locator(".card").count() >= 3, f"{page.locator('.card').count()} cards streamed")
         reasoning = page.locator(".card").first.locator(".reasoning").inner_text()
         check(len(reasoning) > 10, "first card has reasoning text")
@@ -122,7 +124,7 @@ def run_browser() -> int:
 
         # 5 — approve and finish
         appr.locator(".btn-approve").click()
-        page.wait_for_selector("#final.show", timeout=60000)
+        page.wait_for_selector("#final.show", timeout=180000)
         final = page.locator("#finalBody").inner_text()
         check("INV-" in final, "final answer has PayPal ID")
         check("OPS-" in final, "final answer has Jira key")
@@ -135,9 +137,9 @@ def run_browser() -> int:
 
         # 7 — denied path (second run via "Run again", Deny button)
         page.click("#final >> text=Run again")
-        page.wait_for_selector(".card.approval .btn-deny", timeout=30000)
+        page.wait_for_selector(".card.approval .btn-deny", timeout=120000)
         page.locator(".card.approval .btn-deny").click()
-        page.wait_for_selector("#final.show", timeout=60000)
+        page.wait_for_selector("#final.show", timeout=180000)
         f2 = page.locator("#finalBody").inner_text()
         check("skipped" in f2.lower() or "not approved" in f2.lower(),
               "deny → invoice skipped in final answer")

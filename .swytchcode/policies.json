@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "LedgerPilot approval policy: value-moving calls require human approval (SECURITY.md §2.1). Enforced by the Swytchcode execution layer as the backstop behind the UI Approve button.",
+  "description": "LedgerPilot approval policy — READABLE EVIDENCE COPY. The kernel-enforced rules live at .swytchcode/integrations/policies.json (swy policy list / swy policy validate). Value-moving calls require human approval (SECURITY.md §2.1) as the backstop behind the UI Approve button.",
   "rules": [
     {
       "id": "paypal-write-approval",

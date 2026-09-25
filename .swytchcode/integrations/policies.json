@@ -1,0 +1,53 @@
+{
+  "defaults": {
+    "on_violation": "fail",
+    "evaluation": "pre_execution"
+  },
+  "policies": [
+    {
+      "id": "paypal-approval",
+      "target": [
+        "paypal.*"
+      ],
+      "when": {
+        "field": "type",
+        "operator": "==",
+        "value": "write"
+      },
+      "action": {
+        "type": "REQUIRES_APPROVAL",
+        "message": "LedgerPilot: PayPal chase requires operator approval"
+      }
+    },
+    {
+      "id": "gmail-readonly",
+      "target": [
+        "gmail.*"
+      ],
+      "when": {
+        "field": "type",
+        "operator": "==",
+        "value": "write"
+      },
+      "action": {
+        "type": "POLICY_BLOCKED",
+        "message": "LedgerPilot: Gmail is read-only (intake only)"
+      }
+    },
+    {
+      "id": "paypal-sandbox-only",
+      "target": [
+        "paypal.*"
+      ],
+      "when": {
+        "field": "env",
+        "operator": "==",
+        "value": "live"
+      },
+      "action": {
+        "type": "POLICY_BLOCKED",
+        "message": "LedgerPilot never touches live money"
+      }
+    }
+  ]
+}

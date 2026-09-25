@@ -18,7 +18,7 @@ Tick every box before hitting submit. Anything unchecked = do not submit yet (ex
 - [ ] Git history audit clean — no keys/tokens/secrets ever committed
       (`git log -p | grep -iE "api[_-]?key|secret|token"` → only example placeholders)
 - [ ] `.swytchcode/tooling.json` committed (proof of enabled toolkits)
-- [ ] `.swytchcode/policies.json` committed (proof of PayPal approval gate)
+- [ ] `.swytchcode/policies.json` committed (evidence) **and** `.swytchcode/integrations/policies.json` validated (`swy policy validate`) — kernel-enforced PayPal approval gate
 - [ ] `seed/invoices.json` committed (demo data, 4 invoices)
 - [ ] No large binaries in git (backup mp4 gitignored)
 

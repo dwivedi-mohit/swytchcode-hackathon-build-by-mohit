@@ -19,7 +19,8 @@ executes across **five Swytchcode toolkits**, showing every call as a live audit
 ```
 
 **Human approval gate** — money-moving PayPal calls block until an operator clicks Approve
-(the exact request is shown; policy: `.swytchcode/policies.json`):
+(the exact request is shown; policy enforced by the Swytchcode kernel at
+`.swytchcode/integrations/policies.json`, evidence copy at `.swytchcode/policies.json`):
 
 ![approval gate](docs/screenshots/04-approval.png)
 
@@ -33,7 +34,7 @@ executes across **five Swytchcode toolkits**, showing every call as a live audit
 |---|---|
 | **Plans before acting** | LLM decides `write` vs `read_only` mode and announces an ordered plan |
 | **Conditional branches** | DISPUTED → Jira only · OVERDUE → PayPal · DUE_SOON/PAID → log only |
-| **Human-in-the-loop** | Money-moving PayPal calls block on a real approval gate (`.swytchcode/policies.json`) |
+| **Human-in-the-loop** | Money-moving PayPal calls block on a real approval gate — UI button **and** kernel policy `REQUIRES_APPROVAL` (`.swytchcode/integrations/policies.json`) |
 | **Honest degradation** | Gmail/LLM/Slack failures become visible trace cards, never silent lies |
 
 ## Architecture
@@ -68,8 +69,10 @@ goes through `swx.tools.execute(<canonical_id>)`, no raw HTTP anywhere:
 | `notion` | `notion.databases.query`, `notion.pages.create` | ops log, status from live responses |
 | `slack` | `slack.chat.postMessage` | summary built from real results |
 
-Policy evidence: [`.swytchcode/policies.json`](.swytchcode/policies.json) — `paypal.*` writes
-require human approval; Gmail is read-only; live-money PayPal is denied.
+Policies — **enforced by the kernel** at [`.swytchcode/integrations/policies.json`](.swytchcode/integrations/policies.json)
+(`swy policy validate` ✓, 3 rules: `paypal.*` write → `REQUIRES_APPROVAL`, `gmail.*` write →
+`POLICY_BLOCKED`, `paypal env=live` → `POLICY_BLOCKED`); readable evidence copy at
+[`.swytchcode/policies.json`](.swytchcode/policies.json).
 
 ## Setup
 
@@ -83,8 +86,10 @@ pip install -r requirements.txt
 npm install -g swytchcode      # Swytchcode CLI ('swy' v2.23.7); if permission-denied:
                                #   npm config set prefix ~/.local && npm install -g swytchcode
 cp .env.example .env        # add GEMINI_API_KEY / GROQ_API_KEY  (or set MOCK_LLM=1)
-./scripts/setup.sh          # swy init + 5 toolkits + tools + doctor   (needs Swytchcode CLI)
-python scripts/smoke_test.py   # PASS/FAIL matrix, floor = 3 toolkits
+./scripts/setup.sh          # swy init → get 5 toolkits → add tools → policy validate → doctor
+swy auth connect paypal     # then: gmail, slack, jira, notion  (swy auth status to verify)
+python scripts/smoke_test.py            # PASS/FAIL matrix, floor = 3 toolkits
+python scripts/verify_canonical_ids.sh  # every canonical ID resolves via `swy info`
 
 python -m server.main       # → http://localhost:8000
 ```

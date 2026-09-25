@@ -27,3 +27,6 @@ docs/demo/*.mov
 
 # swytchcode lock file
 .swytchcode/*.lock
+# swytchcode lock files
+.swytchcode/*.lock
+.swytchcode/**/*.lock
