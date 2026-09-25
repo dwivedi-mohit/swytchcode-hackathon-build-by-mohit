@@ -15,8 +15,15 @@ fi
 echo "✓ no hardcoded secrets found"
 
 say "1/4 swytchcode CLI"
-command -v swy >/dev/null 2>&1 || fail "'swy' not found — install the Swytchcode CLI first (see event docs)"
-swy --version || true
+if ! command -v swy >/dev/null 2>&1; then
+  echo "'swy' not found — installing via npm (v2.23.7 verified)…"
+  if npm install -g swytchcode 2>/dev/null; then :; else
+    npm config set prefix "$HOME/.local" && npm install -g swytchcode || fail "npm install failed — install Node.js first"
+    export PATH="$HOME/.local/bin:$PATH"
+    echo "note: add 'export PATH=\"\$HOME/.local/bin:\$PATH\"' to your shell profile"
+  fi
+fi
+swy --version || fail "'swy' install broken"
 
 say "2/4 project + toolkits"
 if [ ! -f .swytchcode/tooling.json ]; then

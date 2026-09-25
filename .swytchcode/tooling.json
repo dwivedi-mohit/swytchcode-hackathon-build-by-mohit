@@ -1,46 +1,71 @@
 {
-  "version": 1,
-  "project": "ledgerpilot",
   "description": "LedgerPilot enabled Swytchcode toolkits — committed as rubric evidence (see README Evidence block). No secrets here; credentials live in the Swytchcode CLI after `swy auth`.",
+  "editor": "none",
+  "integrations": {},
+  "mode": "sandbox",
+  "project": "ledgerpilot",
   "toolkits": {
     "gmail": {
       "enabled": true,
       "mode": "read_only",
       "tools": [
-        {"canonical_id": "gmail.messages.list", "purpose": "search invoice emails"},
-        {"canonical_id": "gmail.messages.get", "purpose": "read email content for parsing"}
-      ]
-    },
-    "paypal": {
-      "enabled": true,
-      "mode": "sandbox",
-      "tools": [
-        {"canonical_id": "paypal.invoices.send", "purpose": "send payment chase (approval-gated)"}
+        {
+          "canonical_id": "gmail.messages.list",
+          "purpose": "search invoice emails"
+        },
+        {
+          "canonical_id": "gmail.messages.get",
+          "purpose": "read email content for parsing"
+        }
       ]
     },
     "jira": {
       "enabled": true,
       "mode": "write",
       "tools": [
-        {"canonical_id": "jira.issues.create", "purpose": "escalate disputed invoices"}
+        {
+          "canonical_id": "jira.issues.create",
+          "purpose": "escalate disputed invoices"
+        }
       ]
     },
     "notion": {
+      "database": "ledgerpilot-ops-log",
       "enabled": true,
       "mode": "write",
-      "database": "ledgerpilot-ops-log",
       "tools": [
-        {"canonical_id": "notion.databases.query", "purpose": "run-level dedupe"},
-        {"canonical_id": "notion.pages.create", "purpose": "one Ops DB row per invoice"}
+        {
+          "canonical_id": "notion.databases.query",
+          "purpose": "run-level dedupe"
+        },
+        {
+          "canonical_id": "notion.pages.create",
+          "purpose": "one Ops DB row per invoice"
+        }
+      ]
+    },
+    "paypal": {
+      "enabled": true,
+      "mode": "sandbox",
+      "tools": [
+        {
+          "canonical_id": "paypal.invoices.send",
+          "purpose": "send payment chase (approval-gated)"
+        }
       ]
     },
     "slack": {
+      "channel": "#finance-ops",
       "enabled": true,
       "mode": "write",
-      "channel": "#finance-ops",
       "tools": [
-        {"canonical_id": "slack.chat.postMessage", "purpose": "post run summary"}
+        {
+          "canonical_id": "slack.chat.postMessage",
+          "purpose": "post run summary"
+        }
       ]
     }
-  }
+  },
+  "tools": {},
+  "version": 1
 }

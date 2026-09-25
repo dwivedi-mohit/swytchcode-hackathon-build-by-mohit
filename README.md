@@ -74,6 +74,8 @@ cd swytchcode-hackathon-build-by-mohit
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
+npm install -g swytchcode      # Swytchcode CLI ('swy' v2.23.7); if permission-denied:
+                               #   npm config set prefix ~/.local && npm install -g swytchcode
 cp .env.example .env        # add GEMINI_API_KEY / GROQ_API_KEY  (or set MOCK_LLM=1)
 ./scripts/setup.sh          # swy init + 5 toolkits + tools + doctor   (needs Swytchcode CLI)
 python scripts/smoke_test.py   # PASS/FAIL matrix, floor = 3 toolkits

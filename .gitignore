@@ -24,3 +24,6 @@ docs/demo/*.mov
 .DS_Store
 .idea/
 .vscode/
+
+# swytchcode lock file
+.swytchcode/*.lock
