@@ -18,8 +18,14 @@ executes across **five Swytchcode toolkits**, showing every call as a live audit
 [ 8] RESPOND         final answer with every ID
 ```
 
-*(screenshots: see [`docs/SUBMISSION_CHECKLIST.md`](docs/SUBMISSION_CHECKLIST.md) §4 — captured
-during the live demo and attached to the Commudle submission)*
+**Human approval gate** — money-moving PayPal calls block until an operator clicks Approve
+(the exact request is shown; policy: `.swytchcode/policies.json`):
+
+![approval gate](docs/screenshots/04-approval.png)
+
+**Full run** — every step as a live trace card, final answer with real IDs:
+
+![full trace](docs/screenshots/05-final.png)
 
 ## What makes it an *agent* (not a script)
 
@@ -95,12 +101,15 @@ deterministic LLM + fake tool responses (same graph, same trace).
 ## Tests
 
 ```bash
-python -m pytest tests/ -q     # 16 tests: graph E2E + API/SSE, all mock, no keys, <2s
+python -m pytest tests/ -q        # 16 tests: graph E2E + API/SSE, all mock, no keys, <2s
+python scripts/ui_demo.py         # browser E2E: clicks Run → Approve → asserts UI
+                                  #   + writes docs/screenshots/ and docs/demo/run.mp4
+                                  #   (needs: pip install playwright && playwright install chromium)
 ```
 
-Covers: full-run trace ≥6 events · disputed invoice never reaches PayPal · approval gate
+Tests cover: full-run trace ≥6 events · disputed invoice never reaches PayPal · approval gate
 blocks then approves · timeout → SKIPPED · re-run doesn't double-chase · read-only writes
-nothing · SSE replay has no duplicate cards.
+nothing · SSE replay has no duplicate cards · UI click-through of both Approve and Deny paths.
 
 ## Troubleshooting
 
