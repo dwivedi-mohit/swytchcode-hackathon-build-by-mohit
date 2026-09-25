@@ -1,0 +1,12 @@
+{
+  "invoices": [
+    {"id": "1042", "vendor": "Acme Supplies",   "amount": 5400, "currency": "INR",
+     "due_date": "2026-09-14", "status_hint": "12 days overdue", "email_ref": "seed"},
+    {"id": "1043", "vendor": "Northwind LLP",   "amount": 18200, "currency": "INR",
+     "due_date": "2026-09-20", "status_hint": "dispute: wrong amount quoted", "email_ref": "seed"},
+    {"id": "1044", "vendor": "Bluebird Studio", "amount": 900,  "currency": "INR",
+     "due_date": "2026-10-02", "status_hint": "due next week", "email_ref": "seed"},
+    {"id": "1045", "vendor": "Cobalt Media",    "amount": 3100,  "currency": "INR",
+     "due_date": "2026-09-10", "status_hint": "paid Sep 12", "email_ref": "seed"}
+  ]
+}

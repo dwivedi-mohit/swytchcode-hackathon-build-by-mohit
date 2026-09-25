@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>LedgerPilot — AI Revenue Ops</title>
+<style>
+:root{
+  --bg:#0B0E14; --surface:#141824; --surface-2:#1C2130; --border:#2A3142;
+  --text:#E6E9F0; --text-dim:#8B93A7;
+  --primary:#4F8CFF; --primary-hover:#3D78E6;
+  --success:#2FBF71; --warning:#E8A33D; --error:#E05252; --accent:#9B6DFF;
+  --code-key:#7EC3FF; --code-str:#A8D97A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;
+  font-size:14px; line-height:1.5;
+}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+
+/* ---------- header ---------- */
+header{
+  position:sticky; top:0; z-index:20; height:56px;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px;
+}
+.brand{display:flex; align-items:center; gap:10px}
+.logo{width:24px;height:24px;border-radius:6px;background:var(--accent)}
+.brand h1{font-size:18px;font-weight:600;margin:0}
+.brand .sub{color:var(--text-dim);font-size:12px;margin-left:4px}
+#statusPill{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);color:var(--text-dim)}
+#statusPill.ok{color:var(--success);border-color:var(--success)}
+#statusPill.warn{color:var(--warning);border-color:var(--warning)}
+
+/* ---------- banner ---------- */
+#banner{
+  display:none; background:#2A2416; color:var(--warning);
+  border-bottom:1px solid var(--warning); padding:8px 24px; font-size:13px;
+  align-items:center; gap:12px;
+}
+#banner.show{display:flex}
+#banner button{background:none;border:1px solid var(--warning);color:var(--warning);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px}
+
+/* ---------- layout ---------- */
+main{max-width:900px; margin:0 auto; padding:24px}
+.promptbox{
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:16px; margin-bottom:24px;
+}
+.promptbox.err{border-color:var(--error); animation:pulse .4s ease}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(224,82,82,.35)}}
+textarea{
+  width:100%; min-height:72px; max-height:160px; resize:vertical;
+  background:transparent; border:0; color:var(--text); font-size:15px;
+  font-family:inherit; line-height:1.5; outline:none;
+}
+textarea::placeholder{color:var(--text-dim)}
+.prow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:10px; flex-wrap:wrap}
+.chips{display:flex; gap:8px; flex-wrap:wrap}
+.chip{
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim);
+  border-radius:999px; padding:4px 12px; font-size:12px; cursor:pointer;
+}
+.chip:hover{color:var(--text); border-color:var(--primary)}
+#runBtn{
+  background:var(--primary); color:#fff; border:0; border-radius:8px;
+  padding:10px 22px; font-size:14px; font-weight:600; cursor:pointer;
+}
+#runBtn:hover{background:var(--primary-hover)}
+#runBtn:disabled{opacity:.5;cursor:not-allowed}
+#validation{color:var(--error); font-size:13px; margin-top:8px; display:none}
+#validation.show{display:block}
+
+/* ---------- timeline ---------- */
+#timeline{position:relative; padding-left:22px}
+#timeline:before{content:""; position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:var(--border)}
+.card{
+  position:relative; background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:14px 16px; margin-bottom:16px;
+  animation:enter .18s ease-out;
+}
+@keyframes enter{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+.card:before{
+  content:""; position:absolute; left:-22px; top:18px; width:10px; height:10px;
+  border-radius:50%; background:var(--accent); border:2px solid var(--bg);
+}
+.card.pending:before{background:var(--warning); animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.35}}
+.chead{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.step{color:var(--accent); font-size:12px; font-weight:600}
+.nodename{font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.06em}
+.ts{margin-left:auto; color:var(--text-dim); font-size:12px}
+.pill{font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--text-dim)}
+.pill.tk{border-color:var(--border); color:var(--code-key); font-family:ui-monospace,monospace}
+.pill.ok{color:var(--success); border-color:var(--success)}
+.pill.warn{color:var(--warning); border-color:var(--warning)}
+.pill.fail{color:var(--error); border-color:var(--error)}
+.pill.dim{color:var(--text-dim)}
+.reasoning{font-style:italic; margin:10px 0 0; color:var(--text)}
+.cid{display:inline-block; margin-top:8px; font-size:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; padding:2px 8px; color:var(--code-key)}
+details{margin-top:10px}
+details summary{cursor:pointer; color:var(--text-dim); font-size:12px; user-select:none}
+pre{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:6px;
+  padding:10px; font-size:12px; line-height:1.45; overflow:auto; max-height:220px;
+  white-space:pre-wrap; word-break:break-word; margin:8px 0 0;
+}
+.k{color:var(--code-key)} .s{color:var(--code-str)} .n{color:#E6C17A}
+.decision{
+  border-top:1px solid var(--border); margin-top:10px; padding-top:8px; font-size:13px;
+}
+.decision b{color:var(--accent); font-weight:600}
+
+/* ---------- approval ---------- */
+.card.approval{border-color:var(--warning); border-top:3px solid var(--warning)}
+.card.approval:before{background:var(--warning)}
+.approve-row{display:flex; gap:10px; margin-top:12px}
+.btn-approve,.btn-deny{
+  border:0; border-radius:8px; padding:8px 20px; font-weight:600; font-size:13px;
+  color:#fff; cursor:pointer;
+}
+.btn-approve{background:var(--success)} .btn-deny{background:var(--error)}
+.approve-row button:disabled{opacity:.45; cursor:not-allowed}
+.appr-note{color:var(--text-dim); font-size:12px; margin-top:8px}
+.appr-done{margin-top:10px}
+.countdown{color:var(--warning); font-size:12px; margin-left:10px}
+
+/* ---------- final ---------- */
+#final{
+  display:none; background:var(--surface); border:1px solid var(--border);
+  border-left:3px solid var(--success); border-radius:10px; padding:18px 20px; margin-top:8px;
+}
+#final.show{display:block}
+#final h3{margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim)}
+#finalBody{font-size:15px; line-height:1.6; white-space:pre-wrap}
+#finalBody code{background:var(--surface-2); padding:1px 6px; border-radius:4px; font-size:13px}
+#finalBody em{color:var(--text-dim)}
+.final-actions{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
+.ghost{
+  background:none; border:1px solid var(--border); color:var(--text-dim);
+  border-radius:8px; padding:7px 14px; font-size:13px; cursor:pointer;
+}
+.ghost:hover{color:var(--text); border-color:var(--primary)}
+#empty{color:var(--text-dim); text-align:center; padding:48px 0; font-size:14px}
+
+/* ---------- toasts ---------- */
+#toasts{position:fixed; top:66px; right:16px; z-index:50; display:flex; flex-direction:column; gap:8px}
+.toast{
+  background:var(--surface-2); border:1px solid var(--border); border-left:3px solid var(--primary);
+  border-radius:8px; padding:10px 14px; font-size:13px; max-width:320px;
+  animation:enter .18s ease-out;
+}
+.toast.warn{border-left-color:var(--warning)}
+.toast.error{border-left-color:var(--error)}
+.toast.ok{border-left-color:var(--success)}
+
+@media (max-width:640px){
+  header{padding:0 12px} .brand .sub{display:none}
+  main{padding:12px} .card{padding:12px} details{display:none}
+  .approve-row{flex-direction:column} .approve-row button{width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  .card,.toast{animation:none} .card.pending:before{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true"></div>
+    <h1>LedgerPilot</h1>
+    <span class="sub">AI Revenue Ops · Swytchcode × LangGraph</span>
+  </div>
+  <div id="statusPill">checking…</div>
+</header>
+
+<div id="banner">
+  <span id="bannerText">Connection lost — retry or use hotspot</span>
+  <button onclick="retryStream()">Retry</button>
+  <a class="ghost" style="padding:3px 10px;font-size:12px;text-decoration:none" href="docs/demo/run.mp4" target="_blank">backup video</a>
+</div>
+
+<main>
+  <div class="promptbox" id="promptbox">
+    <textarea id="prompt" placeholder="It's billing day. Find unpaid invoices, chase overdue ones with PayPal, escalate disputes to Jira, log to Notion, summarize in Slack…"></textarea>
+    <div class="prow">
+      <div class="chips">
+        <button class="chip" onclick="useChip(0)">Billing day (full run)</button>
+        <button class="chip" onclick="useChip(1)">Only &gt; ₹50,000</button>
+        <button class="chip" onclick="useChip(2)">What did we chase this week?</button>
+      </div>
+      <button id="runBtn" onclick="run()">Run</button>
+    </div>
+    <div id="validation">Describe the billing task — e.g. “Chase overdue invoices”</div>
+  </div>
+
+  <div id="empty">Run a prompt to watch the agent work</div>
+  <div id="timeline"></div>
+  <div id="final">
+    <h3>Result</h3>
+    <div id="finalBody"></div>
+    <div class="final-actions">
+      <button class="ghost" onclick="runAgain()">Run again</button>
+      <button class="ghost" onclick="copySummary()">Copy summary</button>
+      <a class="ghost" style="padding:7px 14px;text-decoration:none" href="docs/demo/run.mp4" target="_blank">Open backup video</a>
+    </div>
+  </div>
+</main>
+
+<div id="toasts"></div>
+
+<script>
+const CHIPS = [
+  "It's billing day. Find unpaid invoices, chase overdue ones with PayPal, escalate disputes to Jira, log everything to Notion, and summarize in Slack.",
+  "Chase only invoices over ₹50,000 with PayPal and log the rest to Notion.",
+  "What did we chase this week?"
+];
+let runId = null, es = null, running = false;
+const seen = new Set();          // dedupe rendered events (replay-safe)
+let approvalTimers = {};
+
+function useChip(i){ document.getElementById('prompt').value = CHIPS[i]; }
+
+/* ---------- render helpers ---------- */
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
+function esc(s){ return String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function hl(obj){
+  let j = JSON.stringify(obj, null, 2);
+  if(!j || j === '{}') return '';
+  j = esc(j)
+    .replace(/&quot;([^&]*?)&quot;(\s*:)/g, '<span class="k">"$1"</span>$2')
+    .replace(/:\s*&quot;([^&]*?)&quot;/g, ': <span class="s">"$1"</span>')
+    .replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="n">$1</span>');
+  return j;
+}
+
+function pill(status){
+  const map = {
+    ok:['ok','ok'], approved:['ok','approved'], pending_approval:['warn','pending approval'],
+    denied:['fail','denied'], failed:['fail','failed'], skipped:['dim','skipped'], seed:['warn','demo data']
+  };
+  const [cls,label] = map[status] || ['dim', status || 'ok'];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+
+/* ---------- event dispatch ---------- */
+function handle(ev){
+  const key = (ev.type==='done'||ev.type==='error') ? ev.type : `${ev.step}:${ev.node}:${ev.ts}:${ev.status||''}`;
+  if(seen.has(key)) return; seen.add(key);
+
+  if(ev.type === 'trace' || ev.type === 'approval') return renderCard(ev);
+  if(ev.type === 'log') return toast(ev.text, ev.level==='warning'?'warn':'');
+  if(ev.type === 'done') return finish(ev.final_answer);
+  if(ev.type === 'error'){ banner(ev.text || 'Run failed'); toast(ev.text,'error'); stopRun(); }
+}
+
+function renderCard(ev){
+  document.getElementById('empty').style.display='none';
+  const tl = document.getElementById('timeline');
+  const isApproval = ev.type === 'approval';
+  const card = el('div', 'card' + (isApproval ? ' approval' : '') + (ev.status==='pending_approval'?' pending':''));
+
+  card.innerHTML = `
+    <div class="chead">
+      <span class="step">${ev.step}</span>
+      <span class="nodename">${esc(ev.node)}</span>
+      <span class="pill tk">${esc(ev.toolkit||'none')}</span>
+      ${pill(ev.status)}
+      <span class="ts">${esc((ev.ts||'').replace('T',' ').replace('Z',''))}</span>
+    </div>
+    <p class="reasoning">${esc(ev.reasoning||'')}</p>
+    ${ev.canonical_id?`<span class="cid">swy exec ${esc(ev.canonical_id)}</span>`:''}
+    ${reqResp(ev)}
+    ${ev.decision?`<div class="decision"><b>→ decision:</b> ${esc(ev.decision)}</div>`:''}
+    ${isApproval?approvalUI(ev):''}
+  `;
+  tl.appendChild(card);
+  card.scrollIntoView({block:'nearest', behavior:'smooth'});
+
+  if(isApproval && ev.status === 'pending_approval'){
+    card.dataset.hash = ev.request_hash; card.dataset.invoice = ev.invoice_id;
+    startCountdown(card, ev);
+  }
+}
+
+function reqResp(ev){
+  const hasReq = ev.request && Object.keys(ev.request).length;
+  const hasRes = ev.response && Object.keys(ev.response).length;
+  if(!hasReq && !hasRes) return '';
+  return `
+    ${hasReq?`<details><summary>▸ request</summary><pre>${hl(ev.request)}</pre></details>`:''}
+    ${hasRes?`<details><summary>▸ response</summary><pre>${hl(ev.response)}</pre></details>`:''}`;
+}
+
+function approvalUI(ev){
+  if(ev.status === 'pending_approval'){
+    return `<div class="approve-row">
+        <button class="btn-approve" onclick="resolveApproval(this,true)">Approve</button>
+        <button class="btn-deny" onclick="resolveApproval(this,false)">Deny</button>
+      </div>
+      <div class="appr-note">Required by policy <code>policies.json</code> · approval binds to this request<span class="countdown" data-cd></span></div>`;
+  }
+  const label = ev.status === 'approved' ? 'approved by operator'
+              : ev.status === 'denied' ? 'denied by operator'
+              : ev.status === 'skipped' ? 'not approved — call skipped' : ev.status;
+  return `<div class="appr-done">${pill(ev.status)} <span class="pill dim">${esc(label)}</span></div>`;
+}
+
+function startCountdown(card, ev){
+  const total = 120; let left = total;
+  const span = card.querySelector('[data-cd]');
+  const tick = () => {
+    if(!span.isConnected) return clearInterval(approvalTimers[ev.invoice_id]);
+    span.textContent = ` · ${left}s`;
+    if(left-- <= 0){ clearInterval(approvalTimers[ev.invoice_id]); span.textContent=' · expired'; }
+  };
+  approvalTimers[ev.invoice_id] = setInterval(tick, 1000); tick();
+}
+
+async function resolveApproval(btn, approve){
+  const card = btn.closest('.card');
+  const payload = {
+    run_id: runId, invoice_id: card.dataset.invoice,
+    approved: approve, request_hash: card.dataset.hash
+  };
+  try{
+    const r = await fetch('/approve', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    if(!r.ok){ const m = await r.json(); toast(m.detail || 'Approval rejected', 'error'); return; }
+    btn.parentElement.querySelectorAll('button').forEach(b=>b.disabled=true);
+    clearInterval(approvalTimers[payload.invoice_id]);
+    toast(approve ? 'PayPal chase approved' : 'Chase denied — invoice will be skipped', approve?'ok':'warn');
+  }catch(e){ banner('Approval failed — connection lost'); }
+}
+
+/* ---------- run lifecycle ---------- */
+async function run(){
+  const prompt = document.getElementById('prompt').value.trim();
+  const vb = document.getElementById('validation'), pb = document.getElementById('promptbox');
+  if(prompt.length < 10){ vb.classList.add('show'); pb.classList.add('err'); setTimeout(()=>pb.classList.remove('err'),500); return; }
+  vb.classList.remove('show');
+  if(running) return;
+  resetView();
+  try{
+    const r = await fetch('/run', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({prompt})});
+    if(!r.ok){ const m = await r.json(); toast(m.detail || 'Could not start run', 'error'); return; }
+    const {run_id} = await r.json();
+    runId = run_id; startStream();
+  }catch(e){ banner('Cannot reach server — is it running?'); }
+}
+
+function startStream(){
+  stopRun(true); running = true;
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('runBtn').textContent = 'Running…';
+  es = new EventSource('/stream/' + runId);
+  es.onmessage = e => { try{ handle(JSON.parse(e.data)); }catch(_){} };
+  es.onerror = () => { if(running) banner('Connection lost — retry or switch to hotspot'); };
+  es.onopen = () => hideBanner();
+}
+
+function stopRun(keepBanner){
+  if(es){ es.close(); es=null; }
+  running = false;
+  const b = document.getElementById('runBtn'); b.disabled=false; b.textContent='Run';
+  if(!keepBanner) hideBanner();
+}
+
+function finish(answer){
+  const f = document.getElementById('final');
+  document.getElementById('finalBody').innerHTML = md(answer);
+  f.classList.add('show');
+  stopRun();
+  toast('Run complete', 'ok');
+  f.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function runAgain(){ resetView(); document.getElementById('prompt').value = CHIPS[0]; run(); }
+
+function md(text){
+  let t = esc(text);
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  t = t.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  t = t.replace(/^_([^_]+)_$/gm, '<em>$1</em>');
+  return t;
+}
+
+function resetView(){
+  document.getElementById('timeline').innerHTML = '';
+  document.getElementById('final').classList.remove('show');
+  document.getElementById('empty').style.display='';
+  seen.clear(); Object.values(approvalTimers).forEach(clearInterval); approvalTimers = {};
+}
+
+function copySummary(){
+  const txt = document.getElementById('finalBody').innerText;
+  navigator.clipboard?.writeText(txt).then(()=>toast('Copied','ok'), ()=>toast('Copy failed','error'));
+}
+
+/* ---------- chrome ---------- */
+function toast(text, cls){
+  const t = el('div','toast '+(cls||''), esc(text));
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>t.remove(), 5000);
+}
+function banner(text){ document.getElementById('bannerText').textContent = text; document.getElementById('banner').classList.add('show'); }
+function hideBanner(){ document.getElementById('banner').classList.remove('show'); }
+function retryStream(){ hideBanner(); if(runId && running) startStream(); }
+
+fetch('/healthz').then(r=>r.json()).then(h=>{
+  const p = document.getElementById('statusPill');
+  const n = (h.toolkits||[]).length;
+  if(h.swx_mode === 'live' && n){ p.textContent = `● ${n} toolkits connected`; p.className='ok'; }
+  else { p.textContent = `● mock mode · ${n} toolkits wired`; p.className='warn'; }
+  if(h.llm === 'mock') toast('LLM running in deterministic mock mode', 'warn');
+}).catch(()=>{ const p=document.getElementById('statusPill'); p.textContent='● server offline'; p.className='warn'; });
+
+document.getElementById('prompt').addEventListener('keydown', e=>{
+  if((e.metaKey||e.ctrlKey) && e.key==='Enter') run();
+});
+</script>
+</body>
+</html>

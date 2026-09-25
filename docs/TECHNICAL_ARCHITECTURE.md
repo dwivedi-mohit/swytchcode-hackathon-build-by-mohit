@@ -174,6 +174,7 @@ Think of it as one Excel sheet that every node reads and appends to:
 | Field | Type | Meaning |
 |---|---|---|
 | `prompt` | str | The raw sentence the operator typed |
+| `run_id` | str | Unique id per run — idempotency + Notion dedupe + SSE stream key |
 | `mode` | `"write" \| "read_only"` | Set by `plan`; read-only skips all write nodes |
 | `plan` | list[str] | Ordered steps the agent announced |
 | `invoices` | list[Invoice] | Parsed invoices (see 4.2) |

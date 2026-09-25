@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# LedgerPilot setup: Swytchcode init + 5 toolkits + tools + doctor (T01)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+say() { printf '\n\033[1;35m== %s\033[0m\n' "$1"; }
+fail() { printf '\033[1;31m✗ %s\033[0m\n' "$1" >&2; exit 1; }
+
+say "0/4 secret audit"
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  if git ls-files -z | xargs -0 grep -lEi '(api[_-]?key|secret|token|password)[[:space:]]*[:=][[:space:]]*["'"'"'][A-Za-z0-9_\-]{16,}' 2>/dev/null; then
+    fail "possible secret in tracked files — remove before continuing (T01)"
+  fi
+fi
+echo "✓ no hardcoded secrets found"
+
+say "1/4 swytchcode CLI"
+command -v swy >/dev/null 2>&1 || fail "'swy' not found — install the Swytchcode CLI first (see event docs)"
+swy --version || true
+
+say "2/4 project + toolkits"
+if [ ! -f .swytchcode/tooling.json ]; then
+  swy init --project ledgerpilot --non-interactive || swy init || true
+fi
+for t in paypal gmail slack jira notion; do
+  swy get "$t" && echo "✓ $t" || echo "✗ $t (continuing — see doctor)"
+done
+
+say "3/4 attach tools"
+python3 - <<'PY'
+import json, subprocess, sys
+cfg = json.load(open(".swytchcode/tooling.json"))
+for tk, info in cfg.get("toolkits", {}).items():
+    for tool in info.get("tools", []):
+        cid = tool["canonical_id"]
+        r = subprocess.run(["swy", "add", cid], capture_output=True, text=True)
+        print(("✓" if r.returncode == 0 else "✗"), cid, "" if r.returncode == 0 else r.stderr.strip())
+PY
+
+say "4/4 doctor + smoke"
+swy doctor || true
+echo
+echo "Next steps:"
+echo "  1. swy auth <toolkit>   # authenticate each toolkit you need live"
+echo "  2. cp .env.example .env # add GEMINI_API_KEY / GROQ_API_KEY (or MOCK_LLM=1)"
+echo "  3. pip install -r requirements.txt"
+echo "  4. python scripts/smoke_test.py"
+echo "  5. python -m server.main  →  http://localhost:8000"

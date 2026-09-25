@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "description": "LedgerPilot approval policy: value-moving calls require human approval (SECURITY.md §2.1). Enforced by the Swytchcode execution layer as the backstop behind the UI Approve button.",
+  "rules": [
+    {
+      "id": "paypal-write-approval",
+      "description": "Any PayPal write (invoice send/create) requires explicit human approval.",
+      "match": {"toolkit": "paypal", "canonical_id": "paypal.*", "type": "write"},
+      "effect": "require_approval",
+      "prompt": "LedgerPilot wants to send a PayPal payment chase. Approve?",
+      "bind_to": "request_hash",
+      "timeout_seconds": 120
+    },
+    {
+      "id": "paypal-sandbox-only",
+      "description": "Live-money PayPal endpoints are not implemented in this project.",
+      "match": {"toolkit": "paypal", "env": "live"},
+      "effect": "deny"
+    },
+    {
+      "id": "gmail-read-only",
+      "description": "Gmail is read-only: send/modify tools are never enabled.",
+      "match": {"toolkit": "gmail", "type": "write"},
+      "effect": "deny"
+    }
+  ]
+}
