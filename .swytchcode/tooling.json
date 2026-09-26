@@ -3373,6 +3373,419 @@
       "summary": "Currently being removed. Search for issues using JQL (POST)",
       "type": "method"
     },
+    "notion.data_source.create": {
+      "desc": "Create a new data source (database)",
+      "inputs": [
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "parent": {
+                  "properties": {
+                    "page_id": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "page_id"
+                  ],
+                  "type": "object"
+                },
+                "properties": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "items": {
+                    "properties": {
+                      "text": {
+                        "properties": {
+                          "content": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "link": {
+                            "properties": {
+                              "url": {
+                                "required": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "url"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "content"
+                        ],
+                        "type": "object"
+                      },
+                      "type": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                }
+              },
+              "required": [
+                "parent",
+                "properties"
+              ]
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "8fb212b7a166f5297d75aa0429126a1200ba0acb3747b0ae957d352c51ec8387",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Create a data source",
+      "type": "method"
+    },
+    "notion.data_source.get": {
+      "desc": "Retrieve metadata and schema for a data source",
+      "inputs": [
+        {
+          "data_source_id": {
+            "LOCATION": "path",
+            "REQUIRED": true,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "5890c46e9d6c02cf472201eae4bab88d0480f0011018bdaa0a1de18e9e5325de",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Retrieve a data source",
+      "type": "method"
+    },
+    "notion.data_source.update": {
+      "desc": "Update properties of a data source",
+      "inputs": [
+        {
+          "data_source_id": {
+            "LOCATION": "path",
+            "REQUIRED": true,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "description": {
+                  "items": {
+                    "properties": {
+                      "text": {
+                        "properties": {
+                          "content": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "link": {
+                            "properties": {
+                              "url": {
+                                "required": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "url"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "content"
+                        ],
+                        "type": "object"
+                      },
+                      "type": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "properties": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "items": {
+                    "properties": {
+                      "text": {
+                        "properties": {
+                          "content": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "link": {
+                            "properties": {
+                              "url": {
+                                "required": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "url"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "content"
+                        ],
+                        "type": "object"
+                      },
+                      "type": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "38e983e09792b9d86201fbbf74c58345a02dc9be24fa6d44ea99503123c9d8ee",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Update a data source",
+      "type": "method"
+    },
+    "notion.databas.get": {
+      "desc": "Retrieves a database object using the ID specified. Returns database metadata including the list of data source IDs contained in the database.",
+      "inputs": [
+        {
+          "database_id": {
+            "LOCATION": "path",
+            "REQUIRED": true,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "5728c85a656c34505926970e789808bd88c55cefff2d0b7274fc4bf5c8e626f9",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Retrieve a database",
+      "type": "method"
+    },
+    "notion.me.list": {
+      "desc": "",
+      "inputs": [
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "20f4209fd12aed00fb2eb71f014a1601e5a03949eca14f68eec81abbe3e127de",
+      "output": {
+        "schema": {
+          "properties": {
+            "avatar_url": {
+              "properties": {
+                "value": {
+                  "required": false,
+                  "type": "any"
+                }
+              },
+              "type": "object"
+            },
+            "bot": {
+              "properties": {
+                "owner": {
+                  "properties": {
+                    "type": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "user": {
+                      "properties": {
+                        "avatar_url": {
+                          "properties": {
+                            "value": {
+                              "required": false,
+                              "type": "any"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "id": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "name": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "object": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "person": {
+                          "properties": {
+                            "email": {
+                              "required": false,
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": {
+                          "required": false,
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "object": {
+              "required": false,
+              "type": "string"
+            },
+            "type": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Retrieve your token's bot user",
+      "type": "method"
+    },
     "notion.page.create": {
       "desc": "",
       "inputs": [
@@ -3482,6 +3895,101 @@
       "summary": "Create a page",
       "type": "method"
     },
+    "notion.page.update": {
+      "desc": "",
+      "inputs": [
+        {
+          "page_id": {
+            "LOCATION": "path",
+            "REQUIRED": true,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "archived": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "cover": {
+                  "properties": {
+                    "external": {
+                      "properties": {
+                        "url": {
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "url"
+                      ],
+                      "type": "object"
+                    },
+                    "type": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "external"
+                  ],
+                  "type": "object"
+                },
+                "icon": {
+                  "properties": {
+                    "emoji": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "emoji"
+                  ],
+                  "type": "object"
+                },
+                "in_trash": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "properties": {
+                  "required": false,
+                  "type": "map[STRING]ANY"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "fd52c48baa457aba595fe666c160c196543b224749071be82b6c51f8034bd056",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Update page properties",
+      "type": "method"
+    },
     "notion.query.create": {
       "desc": "Query a data source (database) using filters and sorts",
       "inputs": [
@@ -3580,6 +4088,84 @@
         "status": 200
       },
       "summary": "Query a data source",
+      "type": "method"
+    },
+    "notion.search.create": {
+      "desc": "",
+      "inputs": [
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "filter": {
+                  "properties": {
+                    "property": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "value": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "page_size": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "query": {
+                  "required": false,
+                  "type": "string"
+                },
+                "sort": {
+                  "properties": {
+                    "direction": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "start_cursor": {
+                  "required": false,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "e8929ab37ae8a83acbf8b3b91465ba2a05fa1552bd867ba873d6372dcd1e244f",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Search by title",
       "type": "method"
     },
     "slack.chat.postmessage.create": {

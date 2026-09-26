@@ -101,7 +101,7 @@ def execute(
     if write and key:
         headers["Idempotency-Key"] = key  # E10 — carried as a request header
     last_error = ""
-    for attempt in (1, 2):  # one automatic retry for transient failures (E5)
+    for attempt in (1, 2, 3):  # transient failures (E5) — DNS blips here last ~10s
         try:
             body = _live_execute(canonical_id, args, headers)
             if key:
@@ -111,8 +111,8 @@ def execute(
             return {"ok": False, "body": {}, "mode": "live", "error": str(exc)}
         except Exception as exc:  # noqa: BLE001
             last_error = f"{type(exc).__name__}: {exc}"
-            if attempt == 1:
-                time.sleep(0.5)
+            if attempt < 3:
+                time.sleep(1.5 * attempt)
     return {"ok": False, "body": {}, "mode": "live", "error": last_error}
 
 

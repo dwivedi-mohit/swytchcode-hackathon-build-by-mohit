@@ -27,6 +27,10 @@ def _status_for(inv_id: str, label: str, results: dict) -> tuple[str, dict]:
     return "LOGGED", r
 
 
+def _rt(s) -> dict:
+    return {"rich_text": [{"type": "text", "text": {"content": str(s or "")[:2000]}}]}
+
+
 def notion_log_node(state: InvoiceState) -> dict:
     run_id = state.get("run_id", "")
     results = dict(state.get("results", {}))
@@ -58,18 +62,20 @@ def notion_log_node(state: InvoiceState) -> dict:
         inv = invoices[d["invoice_id"]]
         status, r = _status_for(inv["id"], d["label"], results)
         row = {
-            "parent": {"database_id": os.getenv("NOTION_DATA_SOURCE_ID", "ledgerpilot-ops-log")},
+            "parent": {"database_id": os.getenv("NOTION_DATABASE_ID")
+                       or os.getenv("NOTION_DATA_SOURCE_ID", "ledgerpilot-ops-log")},
             "properties": {
-                "Invoice ID": inv["id"],
-                "Vendor": inv["vendor"],
-                "Amount": inv.get("amount"),
-                "Due Date": inv.get("due_date", ""),
-                "Label": d["label"],
-                "Status": status,  # from actual responses, never the plan (§4.2 rule)
-                "PayPal Invoice ID": r.get("paypal_id") or "",
-                "Jira Key": r.get("jira_key") or "",
-                "Run ID": run_id,
-                "Ran At": time.strftime("%Y-%m-%d", time.gmtime()),
+                "Name": {"title": [{"type": "text", "text": {"content": inv["id"]}}]},
+                "Invoice ID": _rt(inv["id"]),
+                "Vendor": _rt(inv["vendor"]),
+                "Amount": {"number": inv.get("amount")},
+                "Due Date": _rt(inv.get("due_date", "")),
+                "Label": _rt(d["label"]),
+                "Status": _rt(status),  # from actual responses, never the plan (§4.2 rule)
+                "PayPal Invoice ID": _rt(r.get("paypal_id") or ""),
+                "Jira Key": _rt(r.get("jira_key") or ""),
+                "Run ID": _rt(run_id),
+                "Ran At": _rt(time.strftime("%Y-%m-%d", time.gmtime())),
             },
         }
         call = swx.execute("notion.page.create", {"body": row}, run_id=run_id,

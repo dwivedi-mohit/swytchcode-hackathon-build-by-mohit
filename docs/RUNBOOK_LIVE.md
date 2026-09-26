@@ -55,6 +55,15 @@ spec are marked *illustrative* until this step passes.
 - **Slack scopes are minimal** (`channels:read, im:read, users:read, chat:write, im:write`):
   the bot canNOT create/join channels. Create the public channel yourself, then
   `/invite @swytchcode` inside it — post is `not_in_channel` until invited.
+- **Notion quirks hit in build:** bundle has no database-create method → create via raw
+  `POST /v1/databases` (token from `.../connected-accounts/notion/credential-package`), add
+  columns with `notion.data_source.update`; page rows need **typed** property values
+  (`{"rich_text":[{"text":{"content":…}}]}` — plain strings → 400). Fetching credential-package
+  **rotates** the token and breaks the CLI cache (401): fix with
+  `sqlite3 ~/.swytchcode/credentials.db "update credential_cache set expires_at=1 where provider_slug='notion'"`,
+  next exec auto-refreshes.
+- **Jira `issue.create` needs ADF** description (`{"type":"doc","version":1,…}`) — plain text →
+  400 "not valid Atlassian Document Format". Node handles this (`_adf`).
 - **Headless/SSH boxes:** `swy auth connect` prints no URL (browser-open fails silently).
   Workaround that works: run a local pass-through proxy on `:8787` to
   `api-v2.swytchcode.com`, launch `SWYTCHCODE_API_URL=http://127.0.0.1:8787 swy auth connect <p>`
@@ -67,7 +76,7 @@ spec are marked *illustrative* until this step passes.
 | `LLM_PROVIDER` | gemini (default) or groq first — gemini free tier = **20 req/day** | `groq` |
 | `JIRA_PROJECT_KEY` / `JIRA_ISSUE_TYPE` | escalate target (code default `OPS`/`Bug`) | `SCRUM` / `Task` |
 | `SLACK_CHANNEL` | summary channel (code default `#finance-ops`) | `#finance-ops` |
-| `NOTION_DATA_SOURCE_ID` | the ops-log DB **UUID** (required for live Notion) | set after DB created |
+| `NOTION_DATA_SOURCE_ID` / `NOTION_DATABASE_ID` | data-source uuid (queries) + database uuid (row parent) | **both set** in `.env` |
 
 **Dashboard chores (accounts — 30 min):**
 
@@ -75,9 +84,9 @@ spec are marked *illustrative* until this step passes.
 |---|---|
 | Google Cloud | enable Gmail API · OAuth consent = Testing · add your account as test user |
 | Gmail | send 4 self-addressed emails matching `seed/invoices.json` (Acme/Northwind/Bluebird/Cobalt) |
-| Notion | create DB **LedgerPilot Ops Log** with the 10 columns in `TECHNICAL_ARCHITECTURE §4.2` · Share → your integration · put the DB **UUID** in `NOTION_DATA_SOURCE_ID` |
+| Notion | **DONE** — DB **LedgerPilot Ops Log** created via API (`POST /v1/databases` + `notion.data_source.update`, 11 columns incl. `Name`); ids in `.env`. Manual fallback: create DB, share with integration **Swytchcode**, put UUID in `.env` |
 | Slack | **public** `#finance-ops` → `/invite @swytchcode` (bot cannot self-join: no `channels:join`) |
-| Jira | free Cloud site (REQUIRED before connect) · project key **OPS** (or set `JIRA_PROJECT_KEY`/`JIRA_ISSUE_TYPE`) · then fix manifest base URL (see auth gotchas) |
+| Jira | free Cloud site `mohitdwivedi633.atlassian.net` · `.env` = `JIRA_PROJECT_KEY=SCRUM`, `JIRA_ISSUE_TYPE=Task` (site has no OPS/Bug) · manifest base URL already fixed (see auth gotchas) |
 | PayPal | sandbox endpoint already live for invoicing (`api-m.sandbox.paypal.com`) — connect is optional/broken upstream |
 
 ---

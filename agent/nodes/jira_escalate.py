@@ -8,6 +8,15 @@ from ..state import InvoiceState, new_trace_event
 from .base import add_error, record
 
 
+def _adf(text: str) -> dict:
+    paras = [{"type": "paragraph",
+              "content": [{"type": "text", "text": line}]}
+             for line in str(text).split("\n") if line]
+    if not paras:
+        paras = [{"type": "paragraph", "content": []}]
+    return {"type": "doc", "version": 1, "content": paras}
+
+
 def jira_escalate_node(state: InvoiceState) -> dict:
     run_id = state.get("run_id", "")
     results = dict(state.get("results", {}))
@@ -23,7 +32,7 @@ def jira_escalate_node(state: InvoiceState) -> dict:
                 "summary": f"Dispute: {inv['vendor']} #{inv['id']}",
                 "issuetype": {"name": os.getenv("JIRA_ISSUE_TYPE", "Bug")},
                 "priority": {"name": priority},
-                "description": (
+                "description": _adf(
                     f"Invoice {inv['id']} ({inv['vendor']}, {inv.get('currency','INR')} {inv.get('amount')}) "
                     f"disputed by customer.\nReason: {d['reason']}\nDue: {inv.get('due_date','')}\n"
                     f"Excerpt: {inv.get('raw_excerpt','')}"
