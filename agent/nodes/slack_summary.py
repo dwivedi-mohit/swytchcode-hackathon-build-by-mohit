@@ -47,15 +47,15 @@ def slack_summary_node(state: InvoiceState) -> dict:
     text = build_summary(state)
 
     call = swx.execute(
-        "slack.chat.postMessage",
-        {"channel": "#finance-ops", "text": text},
+        "slack.chat.postmessage.create",
+        {"body": {"channel": "#finance-ops", "text": text}},
         run_id=run_id, invoice_id="summary", write=True,
     )
     if call["ok"]:
         ev = new_trace_event(
             node="slack_summary",
             reasoning="Summary composed from real PayPal/Jira/Notion responses and posted to #finance-ops.",
-            toolkit="slack", canonical_id="slack.chat.postMessage",
+            toolkit="slack", canonical_id="slack.chat.postmessage.create",
             request={"channel": "#finance-ops", "text": text},
             response=call["body"],
             decision="final answer quotes the posted summary",
@@ -68,7 +68,7 @@ def slack_summary_node(state: InvoiceState) -> dict:
         ev = new_trace_event(
             node="slack_summary",
             reasoning=f"Slack post failed: {call['error']} — summary will render inline instead (X9).",
-            toolkit="slack", canonical_id="slack.chat.postMessage",
+            toolkit="slack", canonical_id="slack.chat.postmessage.create",
             request={"channel": "#finance-ops"}, response={"error": call["error"]},
             decision="inline fallback", status="failed",
         )

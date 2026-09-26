@@ -29,7 +29,7 @@ def jira_escalate_node(state: InvoiceState) -> dict:
             }
         }
         call = swx.execute(
-            "jira.issues.create", fields, run_id=run_id, invoice_id=inv["id"], write=True
+            "jira.api.issue.create", {"body": fields}, run_id=run_id, invoice_id=inv["id"], write=True
         )
         if call["ok"]:
             key = call["body"].get("key", "")
@@ -37,7 +37,7 @@ def jira_escalate_node(state: InvoiceState) -> dict:
                 node="jira_escalate",
                 reasoning=f"Dispute on #{inv['id']} → Jira {key} (priority {priority}). "
                           "PayPal chase deliberately skipped for this invoice.",
-                toolkit="jira", canonical_id="jira.issues.create",
+                toolkit="jira", canonical_id="jira.api.issue.create",
                 request=fields, response=call["body"],
                 decision=f"results[{inv['id']}].jira_key={key}; Status=DISPUTED in Notion",
                 status="ok",
@@ -49,7 +49,7 @@ def jira_escalate_node(state: InvoiceState) -> dict:
             ev = new_trace_event(
                 node="jira_escalate",
                 reasoning=f"Jira escalation failed: {call['error']}", toolkit="jira",
-                canonical_id="jira.issues.create", request=fields,
+                canonical_id="jira.api.issue.create", request=fields,
                 response={"error": call["error"]},
                 decision="continue without issue key", status="failed",
             )

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import time
 
 from .. import approvals, swx
 from ..state import InvoiceState, new_trace_event
@@ -38,7 +39,7 @@ def paypal_chase_node(state: InvoiceState) -> dict:
             reasoning=f"Invoice #{inv['id']} ({inv['vendor']}, {inv['amount']} {inv.get('currency','INR')}) "
                       "is overdue — PayPal chase requires human approval (policies.json).",
             toolkit="paypal",
-            canonical_id="paypal.invoices.send",
+            canonical_id="invoices.invoicing.send.create",
             request=payload,
             decision="waiting for operator approval",
             status="pending_approval",
@@ -79,15 +80,45 @@ def paypal_chase_node(state: InvoiceState) -> dict:
         record(state, ok_ev)
 
         # --- the actual Swytchcode call ---
-        call = swx.execute(
-            "paypal.invoices.send", payload, run_id=run_id, invoice_id=inv["id"], write=True
-        )
+        # Live PayPal: create a draft invoice first (real schema needs a path
+        # invoice_id for send), then send it. Mock: single call, as before.
+        if swx.mode() == "live":
+            created = swx.execute(
+                "invoices.invoicing.invoices.create",
+                {"body": {
+                    "detail": {"invoice_date": time.strftime("%Y-%m-%d")},
+                    "primary_recipients": [{"name": inv["vendor"]}],
+                    "amount": {"value": f"{inv['amount']:.2f}",
+                               "currency_code": inv.get("currency", "INR")},
+                }},
+                run_id=run_id, invoice_id=inv["id"], write=True,
+            )
+            inv_ref = (created.get("body") or {}).get("id", "")
+            if not created["ok"] or not inv_ref:
+                err = created.get("error") or "no invoice id returned"
+                call = {"ok": False, "body": {}, "mode": created.get("mode", "live"),
+                        "error": f"invoice create failed: {err}"}
+            else:
+                call = swx.execute(
+                    "invoices.invoicing.send.create",
+                    {"invoice_id": inv_ref,
+                     "body": {"subject": f"Invoice {inv['id']} overdue",
+                              "note": f"Payment reminder — {d['reason']}"}},
+                    run_id=run_id, invoice_id=inv["id"], write=True,
+                )
+                call.setdefault("body", {})
+                if call["ok"]:
+                    call["body"] = {**call["body"], "id": inv_ref}
+        else:
+            call = swx.execute(
+                "invoices.invoicing.send.create", payload, run_id=run_id, invoice_id=inv["id"], write=True
+            )
         if call["ok"]:
             pid = call["body"].get("id", "")
             ev = new_trace_event(
                 node="paypal_chase",
                 reasoning=f"PayPal accepted the chase for #{inv['id']} → {pid} ({call['mode']}).",
-                toolkit="paypal", canonical_id="paypal.invoices.send",
+                toolkit="paypal", canonical_id="invoices.invoicing.send.create",
                 request=payload, response=call["body"],
                 decision=f"results[{inv['id']}].paypal_id={pid}; Status=CHASED in Notion",
                 status="ok",
@@ -98,7 +129,7 @@ def paypal_chase_node(state: InvoiceState) -> dict:
             ev = new_trace_event(
                 node="paypal_chase",
                 reasoning=f"PayPal chase failed: {call['error']} — continuing without it.",
-                toolkit="paypal", canonical_id="paypal.invoices.send",
+                toolkit="paypal", canonical_id="invoices.invoicing.send.create",
                 request=payload, response={"error": call["error"]},
                 decision=f"results[{inv['id']}].paypal_status=FAILED; Slack will note the failure",
                 status="failed",

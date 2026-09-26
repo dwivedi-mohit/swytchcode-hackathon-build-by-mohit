@@ -30,3 +30,5 @@ docs/demo/*.mov
 # swytchcode lock files
 .swytchcode/*.lock
 .swytchcode/**/*.lock
+
+.swytchcode/workspace.json

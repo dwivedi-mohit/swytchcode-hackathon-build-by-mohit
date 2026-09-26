@@ -63,16 +63,18 @@ goes through `swx.tools.execute(<canonical_id>)`, no raw HTTP anywhere:
 
 | Toolkit | Canonical IDs | Role in the chain |
 |---|---|---|
-| `gmail` | `gmail.messages.list`, `gmail.messages.get` | invoice intake → classify |
-| `paypal` | `paypal.invoices.send` | overdue chase **(approval-gated, sandbox)** → notion → slack |
-| `jira` | `jira.issues.create` | dispute escalation → notion → slack |
-| `notion` | `notion.databases.query`, `notion.pages.create` | ops log, status from live responses |
-| `slack` | `slack.chat.postMessage` | summary built from real results |
+| `gmail` | `gmail.user.messages.get`, `gmail.user.messages.get1` | invoice intake → classify |
+| `paypal` | `invoices.invoicing.invoices.create`, `invoices.invoicing.send.create` | overdue chase: draft → send **(approval-gated, sandbox)** → notion → slack |
+| `jira` | `jira.api.issue.create` | dispute escalation → notion → slack |
+| `notion` | `notion.query.create`, `notion.page.create` | ops log, status from live responses |
+| `slack` | `slack.chat.postmessage.create` | summary built from real results |
 
 Policies — **enforced by the kernel** at [`.swytchcode/integrations/policies.json`](.swytchcode/integrations/policies.json)
-(`swy policy validate` ✓, 3 rules: `paypal.*` write → `REQUIRES_APPROVAL`, `gmail.*` write →
-`POLICY_BLOCKED`, `paypal env=live` → `POLICY_BLOCKED`); readable evidence copy at
-[`.swytchcode/policies.json`](.swytchcode/policies.json).
+(`swy policy validate` ✓, 4 rules, all verified firing via `swy exec --dry-run`:
+`invoices.invoicing.send.create` + `invoice_id` → `REQUIRES_APPROVAL` (exit 7),
+15 Gmail write tools → `POLICY_BLOCKED`, explicit `env=live` PayPal → `POLICY_BLOCKED` (exit 6),
+non-invoice money tools → `POLICY_BLOCKED` allowlist; history in `swy audit policy`);
+readable evidence copy at [`.swytchcode/policies.json`](.swytchcode/policies.json).
 
 ## Setup
 
@@ -89,7 +91,7 @@ cp .env.example .env        # add GEMINI_API_KEY / GROQ_API_KEY  (or set MOCK_LL
 ./scripts/setup.sh          # swy init → get 5 toolkits → add tools → policy validate → doctor
 swy auth connect paypal     # then: gmail, slack, jira, notion  (swy auth status to verify)
 python scripts/smoke_test.py            # PASS/FAIL matrix, floor = 3 toolkits
-python scripts/verify_canonical_ids.sh  # every canonical ID resolves via `swy info`
+./scripts/verify_canonical_ids.sh    # every canonical ID resolves via `swy info` (Gate B: 7/7)
 
 python -m server.main       # → http://localhost:8000
 ```

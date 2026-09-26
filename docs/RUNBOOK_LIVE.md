@@ -55,6 +55,13 @@ spec are marked *illustrative* until this step passes.
 git pull && source .venv/bin/activate
 ./scripts/setup.sh && swy auth status
 python scripts/smoke_test.py            # Gate B: ≥3 PASS on venue wifi
+./scripts/verify_canonical_ids.sh       # Gate B IDs: 7/7 PASS
+# Kernel-policy demo (30s, judge-facing) — both commands print the guard firing:
+printf '{"tool":"invoices.invoicing.send.create","args":{"invoice_id":"INV-1"}}' \
+  | swy exec --dry-run --json ; echo "exit=$?"      # EXPECT exit 7: approval policy paypal-approval
+printf '{"tool":"invoices.invoicing.invoices.create","args":{"env":"live"}}' \
+  | swy exec --dry-run --json ; echo "exit=$?"      # EXPECT exit 6: blocked by paypal-sandbox-only
+swy audit policy                              # violation history for judges
 # if wifi dies → demo continues in mock: MOCK_LLM=1 MOCK_SWX=1 python -m server.main
 ```
 
@@ -64,10 +71,11 @@ python -m server.main                   # .env loaded → live LLM; swy auth pre
 # open http://localhost:8000 → Billing-day prompt → Run → Approve
 # EXPECT: real PayPal sandbox invoice id, real Slack ts, real Notion page_id, real Jira key
 ```
-Watch for: kernel policy `REQUIRES_APPROVAL` may pause the PayPal exec (`swy policy list` →
-`paypal-approval`). That's the policy working — approve in the UI and the kernel re-evaluates;
-if the CLI blocks non-interactively, show judges `swy exec paypal.invoices.send --explain`
-plus the UI approval card (belt **and** suspenders is the story).
+Watch for: kernel policy `REQUIRES_APPROVAL` will hold the PayPal exec (`swy policy list` →
+`paypal-approval`, fires on `invoice_id exists`). That's the policy working — approve in the UI,
+and if the kernel still holds the call non-interactively, show judges
+`printf '{"tool":"invoices.invoicing.send.create","args":{"invoice_id":"INV-1"}}' | swy exec --dry-run --json`
+(exit 7: "matches an approval policy") plus the UI approval card (belt **and** suspenders is the story).
 
 **Quick fixes:**
 

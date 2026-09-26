@@ -52,15 +52,16 @@ def _fetch_gmail() -> tuple[list[Invoice], list[str]]:
     invoices: list[Invoice] = []
     errors: list[str] = []
     listing = swx.execute(
-        "gmail.messages.list",
-        {"q": GMAIL_QUERY, "maxResults": env_int("MAX_INVOICES", 10)},
+        "gmail.user.messages.get",
+        {"userId": "me", "q": GMAIL_QUERY, "maxResults": env_int("MAX_INVOICES", 10)},
         write=False,
     )
     if not listing["ok"]:
         return [], [f"Gmail search failed: {listing['error']}"]
     messages = listing["body"].get("messages", [])
     for msg in messages[: env_int("MAX_INVOICES", 10)]:
-        got = swx.execute("gmail.messages.get", {"id": msg.get("id"), "format": "full"})
+        got = swx.execute("gmail.user.messages.get1",
+                          {"userId": "me", "id": msg.get("id"), "format": "full"})
         if not got["ok"]:
             errors.append(f"message {msg.get('id')} unreadable: {got['error']}")
             continue
@@ -116,7 +117,7 @@ def intake_node(state: InvoiceState) -> dict:
             + (" — DEMO DATA (gmail not connected)" if status == "seed" else "")
         ),
         toolkit="gmail",
-        canonical_id="gmail.messages.list",
+        canonical_id="gmail.user.messages.get",
         request={"q": GMAIL_QUERY, "maxResults": cap},
         response={"count": len(invoices), "ids": [i["id"] for i in invoices]},
         decision=f"parse {len(invoices)} invoices → classify",

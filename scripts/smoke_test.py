@@ -15,11 +15,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from agent import swx  # noqa: E402
 
 CHECKS = [
-    ("gmail",   "gmail.messages.list",      {"q": "is:unread", "maxResults": 1}, False),
-    ("paypal",  "paypal.invoices.list",     {},                                   False),
-    ("jira",    "jira.issues.search",       {"jql": "order by created DESC", "maxResults": 1}, False),
-    ("notion",  "notion.databases.query",   {"database_id": "ledgerpilot-ops-log"}, False),
-    ("slack",   "slack.chat.postMessage",   {"channel": "#finance-ops", "text": "LedgerPilot smoke test ✅"}, True),
+    ("gmail",   "gmail.user.messages.get",      {"userId": "me", "q": "is:unread", "maxResults": 1}, False),
+    ("paypal",  "invoices.invoicing.invoices.list",     {},                                   False),
+    ("jira",    "jira.api.search.create1",       {"jql": "order by created DESC", "maxResults": 1}, False),
+    ("notion",  "notion.query.create",   {"data_source_id": "ledgerpilot-ops-log"}, False),
+    ("slack",   "slack.chat.postmessage.create",   {"body": {"channel": "#finance-ops", "text": "LedgerPilot smoke test ✅"}}, True),
 ]
 FLOOR = 3
 
@@ -33,7 +33,12 @@ def main() -> int:
         ms = int((time.time() - t0) * 1000)
         ok = res["ok"]
         passed += ok
-        rows.append((toolkit, cid, "PASS" if ok else "FAIL", ms, res.get("error", "")[:80]))
+        err = res.get("error", "")
+        import re
+        m = re.search(r'"error":"([^"]{1,160})', err)  # extract JSON error field from CLI stderr
+        if m:
+            err = m.group(1).encode().decode("unicode_escape")
+        rows.append((toolkit, cid, "PASS" if ok else "FAIL", ms, err[:100]))
 
     w = max(len(r[0]) for r in rows) + 2
     print(f"{'toolkit':<{w}} {'canonical id':<34} {'result':<6} {'ms':>5}  error")

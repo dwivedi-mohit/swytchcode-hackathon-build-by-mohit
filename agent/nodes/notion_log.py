@@ -1,6 +1,7 @@
 """notion_log node — one Ops DB row per invoice, Status from real API responses."""
 from __future__ import annotations
 
+import os
 import time
 
 from .. import swx
@@ -36,15 +37,16 @@ def notion_log_node(state: InvoiceState) -> dict:
 
     # E10 dedupe — skip if this run already logged
     query = swx.execute(
-        "notion.databases.query",
-        {"filter": {"property": "Run ID", "rich_text": {"equals": run_id}}},
+        "notion.query.create",
+        {"data_source_id": os.getenv("NOTION_DATA_SOURCE_ID", "ledgerpilot-ops-log"),
+         "body": {"filter": {"property": "Run ID", "rich_text": {"equals": run_id}}}},
         run_id=run_id, write=False,
     )
     if query["ok"] and query["body"].get("results"):
         ev = new_trace_event(
             node="notion_log",
             reasoning=f"Run {run_id} already has {len(query['body']['results'])} rows — deduped (E10).",
-            toolkit="notion", canonical_id="notion.databases.query",
+            toolkit="notion", canonical_id="notion.query.create",
             request={"run_id": run_id}, response={"count": len(query["body"]["results"])},
             decision="skip row creation", status="skipped",
         )
@@ -70,7 +72,7 @@ def notion_log_node(state: InvoiceState) -> dict:
                 "Ran At": time.strftime("%Y-%m-%d", time.gmtime()),
             },
         }
-        call = swx.execute("notion.pages.create", row, run_id=run_id,
+        call = swx.execute("notion.page.create", {"body": row}, run_id=run_id,
                            invoice_id=inv["id"], write=True)
         if call["ok"]:
             created += 1
@@ -83,7 +85,7 @@ def notion_log_node(state: InvoiceState) -> dict:
         node="notion_log",
         reasoning=f"Wrote {created}/{len(decisions)} Ops DB row(s) with status from live responses "
                   f"({', '.join(sorted(set(_status_for(d['invoice_id'], d['label'], results)[0] for d in decisions)))}).",
-        toolkit="notion", canonical_id="notion.pages.create",
+        toolkit="notion", canonical_id="notion.page.create",
         request={"rows": len(decisions)},
         response={"created": created, "pages": pages},
         decision=f"results.notion.rows={created} → Slack summary",

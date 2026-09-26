@@ -5,39 +5,75 @@
   },
   "policies": [
     {
-      "id": "paypal-approval",
-      "target": [
-        "paypal.*"
-      ],
-      "when": {
-        "field": "type",
-        "operator": "==",
-        "value": "write"
-      },
-      "action": {
-        "type": "REQUIRES_APPROVAL",
-        "message": "LedgerPilot: PayPal chase requires operator approval"
-      }
-    },
-    {
       "id": "gmail-readonly",
       "target": [
-        "gmail.*"
+        "gmail.user.send.create",
+        "gmail.user.send.create1",
+        "gmail.user.drafts.create",
+        "gmail.user.drafts.update",
+        "gmail.user.messages.create",
+        "gmail.user.messages.delete",
+        "gmail.user.trash.create",
+        "gmail.user.trash.create1",
+        "gmail.user.modify.create",
+        "gmail.user.modify.create1",
+        "gmail.user.batchDelete.create",
+        "gmail.user.batchModify.create",
+        "gmail.user.labels.create",
+        "gmail.user.labels.update",
+        "gmail.user.labels.delete"
       ],
       "when": {
-        "field": "type",
-        "operator": "==",
-        "value": "write"
+        "operator": "any",
+        "conditions": [
+          {
+            "field": "raw",
+            "operator": "exists"
+          },
+          {
+            "field": "body",
+            "operator": "exists"
+          },
+          {
+            "field": "id",
+            "operator": "exists"
+          },
+          {
+            "field": "ids",
+            "operator": "exists"
+          },
+          {
+            "field": "name",
+            "operator": "exists"
+          }
+        ]
       },
       "action": {
         "type": "POLICY_BLOCKED",
-        "message": "LedgerPilot: Gmail is read-only (intake only)"
+        "message": "LedgerPilot: Gmail is intake read-only \u2014 write tools are blocked by the kernel"
+      }
+    },
+    {
+      "id": "paypal-approval",
+      "target": [
+        "invoices.invoicing.send.create"
+      ],
+      "when": {
+        "field": "invoice_id",
+        "operator": "exists"
+      },
+      "action": {
+        "type": "REQUIRES_APPROVAL",
+        "message": "LedgerPilot: sending a PayPal invoice moves value \u2014 operator approval required (UI gate + kernel HITL)"
       }
     },
     {
       "id": "paypal-sandbox-only",
       "target": [
-        "paypal.*"
+        "invoices.invoicing.send.create",
+        "invoices.invoicing.invoices.create",
+        "payments.payment.captures.refund",
+        "payouts.payment.payouts.create"
       ],
       "when": {
         "field": "env",
@@ -46,7 +82,24 @@
       },
       "action": {
         "type": "POLICY_BLOCKED",
-        "message": "LedgerPilot never touches live money"
+        "message": "LedgerPilot demo: explicit env=live PayPal calls are blocked (sandbox only)"
+      }
+    },
+    {
+      "id": "paypal-noninvoice-blocked",
+      "target": [
+        "payments.payment.capture.create",
+        "payments.payment.captures.refund",
+        "orders.checkout.orders.create",
+        "payouts.payment.payouts.create"
+      ],
+      "when": {
+        "field": "invoice_id",
+        "operator": "not_exists"
+      },
+      "action": {
+        "type": "POLICY_BLOCKED",
+        "message": "LedgerPilot: money movement is allowlisted to the approval-gated invoice path only"
       }
     }
   ]

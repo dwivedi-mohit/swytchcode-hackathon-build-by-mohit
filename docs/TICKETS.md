@@ -194,7 +194,9 @@ redacting secrets from any payload before it enters state.
 ### T22 — Approval gate: policies.json + UI approval round-trip
 **Priority:** MUST · **Depends on:** T21, T31 · **Phase:** 🟨
 
-**Task:** Write `.swytchcode/policies.json` requiring human approval for `paypal.*` writes;
+**Task:** Write `.swytchcode/integrations/policies.json` requiring human approval for
+`invoices.invoicing.send.create` (`when: invoice_id exists` → `REQUIRES_APPROVAL`;
+verified `swy exec --dry-run` → exit 7);
 wire the round-trip: graph pauses at `approval_pending` → SSE emits approval card → UI
 Approve/Deny → server validates the approval matches the request hash (X7) → graph resumes or
 cancels (E6), with 120s timeout (E7).

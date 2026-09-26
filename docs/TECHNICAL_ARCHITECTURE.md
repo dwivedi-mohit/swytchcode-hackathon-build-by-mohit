@@ -90,7 +90,7 @@ flowchart LR
 ```
 LangGraph node
   → build args dict
-  → swx.tools.execute("paypal.invoices.send", {"params": {...}, "Authorization": ...})
+  → swx.tools.execute("invoices.invoicing.send.create", {"params": {...}, "Authorization": ...})
   → Swytchcode: schema validation → policy check (policies.json) → auth → HTTP
       → retries + idempotency key on failure
   → structured JSON response
@@ -118,7 +118,7 @@ ledgerpilot/
 ├── .gitignore                       # .env, __pycache__, .swytchcode/auth*, videos
 ├── .swytchcode/
 │   ├── tooling.json                 # EVIDENCE: 5 enabled toolkits + canonical IDs
-│   ├── policies.json                # approval gate on paypal.* writes
+│   ├── policies.json                # approval gate on invoices.* writes
 │   └── (generated bundles/auth — gitignored where sensitive)
 ├── agent/
 │   ├── __init__.py
@@ -219,7 +219,7 @@ what the external API actually returned. This is the "output drives next action"
   "node": "paypal_chase",
   "reasoning": "Invoice #1042 is 12 days overdue → chase via PayPal",
   "toolkit": "paypal",
-  "canonical_id": "paypal.invoices.send",
+  "canonical_id": "invoices.invoicing.send.create",
   "request": {"params": {"invoice_id": "1042", "amount": "5400"}},
   "response": {"id": "INV-8F2K", "status": "SENT"},
   "decision": "Log status=CHASED, include id INV-8F2K in Slack summary",
@@ -293,7 +293,7 @@ MAX_INVOICES=10                # safety cap per run
 | `plan` | prompt | — | mode, plan | intake |
 | `intake` | mode | `gmail.*` (or seed) | invoices[] | classify |
 | `classify` | invoices[] | — (LLM only) | decisions[] | conditional |
-| `paypal_chase` | decisions (OVERDUE) | `paypal.*` **(gated)** | results.paypal | notion_log |
+| `paypal_chase` | decisions (OVERDUE) | `invoices.*` **(gated)** | results.paypal | notion_log |
 | `jira_escalate` | decisions (DISPUTED) | `jira.*` | results.jira | notion_log |
 | `notion_log` | decisions + results | `notion.*` | results.notion | slack_summary (write) / respond (read-only) |
 | `slack_summary` | results | `slack.*` | results.slack | respond |

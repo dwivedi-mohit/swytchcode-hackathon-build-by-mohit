@@ -33,10 +33,10 @@ def test_cli_invocation_contract(monkeypatch):
     monkeypatch.setattr(swx, "_sdk_available", lambda: False)
     monkeypatch.setattr(swx, "_cli_present", lambda: True)
 
-    out = swx._live_execute("paypal.invoices.send",
+    out = swx._live_execute("invoices.invoicing.send.create",
                             {"invoice": {"number": "INV-1"}},
-                            {"Idempotency-Key": "run1:1042:paypal.invoices.send"})
-    assert out == {"ok": True, "echo": "paypal.invoices.send"}
+                            {"Idempotency-Key": "run1:1042:invoices.invoicing.send.create"})
+    assert out == {"ok": True, "echo": "invoices.invoicing.send.create"}
 
 
 def test_execute_live_passes_headers_not_body(monkeypatch):
@@ -51,11 +51,11 @@ def test_execute_live_passes_headers_not_body(monkeypatch):
     monkeypatch.setattr(swx, "mode", lambda: "live")
     monkeypatch.setattr(swx, "_sdk_available", lambda: False)
 
-    res = swx.execute("paypal.invoices.send", {"invoice": {"number": "INV-1"}},
+    res = swx.execute("invoices.invoicing.send.create", {"invoice": {"number": "INV-1"}},
                       run_id="r1", invoice_id="1042", write=True)
     assert res["ok"] and res["mode"] == "live"
     assert "Idempotency-Key" not in seen["input"]["args"], "idempotency must be a header"
-    assert any("Idempotency-Key=r1:1042:paypal.invoices.send" in p for p in seen["cmd"])
+    assert any("Idempotency-Key=r1:1042:invoices.invoicing.send.create" in p for p in seen["cmd"])
     assert seen["input"]["args"] == {"invoice": {"number": "INV-1"}}
 
 
@@ -68,6 +68,6 @@ def test_cli_error_mentions_setup_hint(monkeypatch):
     monkeypatch.setattr(swx, "_sdk_available", lambda: False)
     monkeypatch.setattr(swx, "mode", lambda: "live")  # other test modules set MOCK_SWX
 
-    res = swx.execute("gmail.messages.list", {"q": "x"}, run_id="r", invoice_id="", write=False)
+    res = swx.execute("gmail.user.messages.get", {"q": "x"}, run_id="r", invoice_id="", write=False)
     assert not res["ok"]
     assert "scripts/setup.sh" in res["error"], "actionable hint missing"

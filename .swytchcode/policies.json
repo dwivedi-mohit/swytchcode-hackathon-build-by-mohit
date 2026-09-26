@@ -1,27 +1,67 @@
 {
   "version": 1,
-  "description": "LedgerPilot approval policy — READABLE EVIDENCE COPY. The kernel-enforced rules live at .swytchcode/integrations/policies.json (swy policy list / swy policy validate). Value-moving calls require human approval (SECURITY.md §2.1) as the backstop behind the UI Approve button.",
+  "description": "LedgerPilot guard policies \u2014 READABLE EVIDENCE COPY. Kernel-enforced rules live at .swytchcode/integrations/policies.json (swy policy list / swy policy validate). Conditions resolve real request args (docs.swytchcode.com/policies/policy-rules) and were verified firing with swy exec --dry-run (exit 7 approval / exit 6 blocked) + swy audit policy.",
   "rules": [
     {
-      "id": "paypal-write-approval",
-      "description": "Any PayPal write (invoice send/create) requires explicit human approval.",
-      "match": {"toolkit": "paypal", "canonical_id": "paypal.*", "type": "write"},
+      "id": "paypal-approval",
+      "description": "Sending a PayPal invoice (invoices.invoicing.send.create) requires human approval: kernel REQUIRES_APPROVAL behind the UI Approve button.",
+      "match": {
+        "canonical_id": "invoices.invoicing.send.create",
+        "invoice_id": "exists"
+      },
       "effect": "require_approval",
       "prompt": "LedgerPilot wants to send a PayPal payment chase. Approve?",
-      "bind_to": "request_hash",
-      "timeout_seconds": 120
+      "verified": "swy exec --dry-run \u2192 exit 7 'approval required'"
+    },
+    {
+      "id": "gmail-readonly",
+      "description": "Gmail intake is read-only: 15 write tools (send/drafts/trash/modify/labels) are POLICY_BLOCKED by the kernel; only messages.list/get are enabled in tooling.json.",
+      "match": {
+        "canonical_id": [
+          "gmail.user.send.create",
+          "gmail.user.drafts.create",
+          "...15 write tools"
+        ],
+        "any_of": [
+          "raw",
+          "body",
+          "id",
+          "ids",
+          "name"
+        ]
+      },
+      "effect": "deny",
+      "verified": "swy policy list \u2192 any (5 sub-conditions); blocked post-auth (auth is checked first)"
     },
     {
       "id": "paypal-sandbox-only",
-      "description": "Live-money PayPal endpoints are not implemented in this project.",
-      "match": {"toolkit": "paypal", "env": "live"},
-      "effect": "deny"
+      "description": "Any PayPal call explicitly tagged env=live is blocked \u2014 the demo never touches live money.",
+      "match": {
+        "canonical_id": [
+          "invoices.invoicing.send.create",
+          "invoices.invoicing.invoices.create",
+          "payments.payment.captures.refund",
+          "payouts.payment.payouts.create"
+        ],
+        "env": "live"
+      },
+      "effect": "deny",
+      "verified": "swy exec --dry-run env=live \u2192 exit 6 policy_denied + swy audit policy entry"
     },
     {
-      "id": "gmail-read-only",
-      "description": "Gmail is read-only: send/modify tools are never enabled.",
-      "match": {"toolkit": "gmail", "type": "write"},
-      "effect": "deny"
+      "id": "paypal-noninvoice-blocked",
+      "description": "Allowlist: money movement outside the approval-gated invoice path (payments/orders/payouts) is blocked.",
+      "match": {
+        "canonical_id": [
+          "payments.payment.capture.create",
+          "payments.payment.captures.refund",
+          "orders.checkout.orders.create",
+          "payouts.payment.payouts.create"
+        ],
+        "invoice_id": "not_exists"
+      },
+      "effect": "deny",
+      "verified": "tooling.json allowlist refuses them first (not_configured); policy is defence in depth"
     }
   ]
 }

@@ -75,7 +75,7 @@ reasoning — each one gated, logged, and explained.*
 | F3a | Seed-data fallback intake | If Gmail auth is unavailable, agent reads `seed/invoices.json` with identical behavior | **Must-have** (demo safety) |
 | F4 | Invoice classification | LLM labels each invoice OVERDUE / DISPUTED / DUE_SOON / PAID and decides the action | **Must-have** |
 | F5 | PayPal payment chase | Overdue invoices → create/send a payment chase through PayPal (sandbox) | **Must-have** (track identity) |
-| F6 | Human approval gate | Every `paypal.*` write requires one-click approval in the UI, enforced by Swytchcode `policies.json` | **Must-have** |
+| F6 | Human approval gate | Every `invoices.*` write requires one-click approval in the UI, enforced by Swytchcode `policies.json` | **Must-have** |
 | F7 | Jira dispute escalation | Disputed invoices → Jira issue with priority scaled by amount; **explicitly skips PayPal** | **Must-have** |
 | F8 | Notion operations log | Every outcome written to an Ops DB; status field = value actually returned by PayPal/Jira | **Must-have** |
 | F9 | Slack team summary | Summary posted to `#finance-ops`, text generated from actual API results | **Must-have** |
@@ -106,7 +106,7 @@ reasoning — each one gated, logged, and explained.*
    labeled honestly in the trace). Cards show toolkit `gmail`, canonical ID, request, response.
 6. **Classify step.** Trace card 3: table of 4 invoices with labels (1 OVERDUE, 1 DISPUTED,
    1 DUE_SOON, 1 PAID) and the agent's stated decision per invoice.
-7. **Branch A — PayPal.** For the OVERDUE invoice: trace card 4 shows proposed `paypal.*` call →
+7. **Branch A — PayPal.** For the OVERDUE invoice: trace card 4 shows proposed `invoices.*` call →
    **APPROVE button appears** (policy gate). Operator clicks Approve → card updates with live
    PayPal sandbox response (invoice ID, status SENT).
 8. **Branch B — Jira.** For the DISPUTED invoice: trace card 5 shows Jira issue created

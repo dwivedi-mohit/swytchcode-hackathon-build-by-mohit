@@ -88,7 +88,7 @@ step dots (10px circles, `--accent` fill when done, pulsing when active).
 - **Header row:** step dot number (accent) · node name (uppercase mono) · toolkit pill ·
   status pill · timestamp (`--text-dim`, 12px, right)
 - **Reasoning body:** italic 14px paragraph
-- **Canonical ID line:** mono chip `swy exec paypal.invoices.send` on `--surface-2`
+- **Canonical ID line:** mono chip `swy exec invoices.invoicing.send.create` on `--surface-2`
 - **Collapsible JSON** (`▸ request` / `▸ response`): `<details>` styled, mono 12px, syntax-tinted
   keys/values; `Authorization` rendered as `"***"`
 - **Decision footer:** 1px top border, prefix `→ decision:` in `--accent`, then text
@@ -171,8 +171,8 @@ Failure contract: non-2xx or validation error raises `ToolError` → node catche
 
 | Step | Canonical ID (illustrative) | Request | Response used |
 |---|---|---|---|
-| Search | `gmail.messages.list` | `{"q": GMAIL_QUERY, "maxResults": MAX_INVOICES}` | message IDs |
-| Fetch | `gmail.messages.get` | `{"id": msg_id, "format": "full"}` | subject, snippet, date → LLM parses to `Invoice[]` |
+| Search | `gmail.user.messages.get` | `{"userId": "me", "q": GMAIL_QUERY, "maxResults": MAX_INVOICES}` | message IDs |
+| Fetch | `gmail.user.messages.get1` | `{"userId": "me", "id": msg_id, "format": "full"}` | subject, snippet, date → LLM parses to `Invoice[]` |
 
 **Output drives next action:** `invoices[]` is the sole input to `classify` — no invoices →
 E4 clean stop.
@@ -185,12 +185,13 @@ E4 clean stop.
 |---|---|
 | Purpose | Create/send a payment chase for OVERDUE invoices (sandbox only) |
 | Called from | `agent/nodes/paypal_chase.py` |
-| Gating | UI approval **and** `policies.json` rule requiring approval for `paypal.*` |
+| Gating | UI approval **and** kernel rule `paypal-approval` (`invoices.invoicing.send.create`, `invoice_id exists` → `REQUIRES_APPROVAL`) |
 | Environment | `PAYPAL_ENV=sandbox` — enforced at config load |
 
 | Step | Canonical ID (illustrative) | Request | Response used |
 |---|---|---|---|
-| Create chase | `paypal.invoices.create` (or `.send`) | `{"invoice": {"number": id, "amount": {"value": amt, "currency": cur}, "recipient": vendor}}` | `id` (`INV-…`), `status` |
+| Create draft | `invoices.invoicing.invoices.create` | `{"body": {"detail": {"invoice_date": today}, "primary_recipients": [{"name": vendor}], "amount": {"value": amt, "currency_code": cur}}}` | `id` (`INV-…`) |
+| Send draft | `invoices.invoicing.send.create` | `{"invoice_id": <created id>, "body": {"subject": …, "note": …}}` | `href`/`rel` (kernel policy `paypal-approval` fires here → exit 7 until approved) |
 
 **Output drives next action:** response `id`/`status` → Notion `PayPal Invoice ID` + `Status=CHASED`
 → Slack summary line. Denied/failed → `Status=SKIPPED` and Slack says so (E6/E5).
@@ -206,7 +207,7 @@ E4 clean stop.
 
 | Step | Canonical ID (illustrative) | Request | Response used |
 |---|---|---|---|
-| Create issue | `jira.issues.create` | `{"fields": {"project": {"key": "OPS"}, "summary": "Dispute: <vendor> #<id>", "issuetype": {"name": "Bug"}, "priority": {"name": "High" if amount>50000 else "Medium"}, "description": <email excerpt + decision reason>}}` | `key` (`OPS-…`) |
+| Create issue | `jira.api.issue.create` | `{"body": {"fields": {"project": {"key": "OPS"}, "summary": "Dispute: <vendor> #<id>", "issuetype": {"name": "Bug"}, "priority": {"name": "High" if amount>50000 else "Medium"}, "description": <email excerpt + decision reason>}}}` | `key` (`OPS-…`) |
 
 **Output drives next action:** `key` → Notion `Jira Key` → Slack "escalated to OPS-142"
 → final answer. Priority is derived from the *invoice data* (amount), demonstrating
@@ -223,8 +224,8 @@ reasoned parameter selection.
 
 | Step | Canonical ID (illustrative) | Request | Response used |
 |---|---|---|---|
-| Query DB | `notion.databases.query` | `{"database_id": OPS_DB, "filter": {"Run ID": run_id}}` | dedupe check (E10/X3) |
-| Create row | `notion.pages.create` | `{"parent": {"database_id": OPS_DB}, "properties": {Invoice ID, Vendor, Amount, Due Date, Label, Status, PayPal Invoice ID, Jira Key, Run ID, Ran At}}` | `page_id` |
+| Query DB | `notion.query.create` | `{"data_source_id": OPS_DB, "body": {"filter": {"property": "Run ID", "rich_text": {"equals": run_id}}}}` | dedupe check (E10/X3) |
+| Create row | `notion.page.create` | `{"body": {"parent": {"database_id": OPS_DB}, "properties": {Invoice ID, Vendor, Amount, Due Date, Label, Status, PayPal Invoice ID, Jira Key, Run ID, Ran At}}}` | `page_id` |
 
 **Output drives next action:** `page_id` recorded in `results.notion`; Slack summary includes
 row count ("4 rows logged").
@@ -240,7 +241,7 @@ row count ("4 rows logged").
 
 | Step | Canonical ID (illustrative) | Request | Response used |
 |---|---|---|---|
-| Post | `slack.chat.postMessage` | `{"channel": "#finance-ops", "text": summary_from_results}` | `ts`, `channel` |
+| Post | `slack.chat.postmessage.create` | `{"body": {"channel": "#finance-ops", "text": summary_from_results}}` | `ts`, `channel` |
 
 **Output drives next action:** final answer quotes the posted text + `ts` permalink; failure →
 summary rendered inline (X9).

@@ -47,21 +47,21 @@ def _stable(prefix: str, seed: str, n: int = 8) -> str:
 
 
 def _mock_execute(canonical_id: str, params: dict, invoice_id: str) -> dict:
-    if canonical_id == "gmail.messages.list":
+    if canonical_id == "gmail.user.messages.get":
         return {"messages": [{"id": f"msg-{i}"} for i in range(1, 5)], "resultSizeEstimate": 4}
-    if canonical_id == "gmail.messages.get":
+    if canonical_id == "gmail.user.messages.get1":
         return {"id": params.get("id"), "subject": "Invoice", "snippet": ""}
-    if canonical_id.startswith("paypal."):
+    if canonical_id.startswith("invoices.") or canonical_id.startswith("paypal."):
         pid = _stable("INV-", f"{invoice_id}:{canonical_id}", 4).upper()
         return {"id": pid, "status": "SENT", "amount": params.get("invoice", {}).get("amount", {})}
-    if canonical_id == "jira.issues.create":
+    if canonical_id == "jira.api.issue.create":
         key = _stable("OPS-", invoice_id or canonical_id, 4)
         return {"key": key, "id": key.replace("OPS-", "")}
-    if canonical_id == "notion.databases.query":
+    if canonical_id == "notion.query.create":
         return {"results": []}
-    if canonical_id == "notion.pages.create":
+    if canonical_id == "notion.page.create":
         return {"page_id": _stable("notion-page-", invoice_id or canonical_id, 10)}
-    if canonical_id == "slack.chat.postMessage":
+    if canonical_id == "slack.chat.postmessage.create":
         return {"ok": True, "channel": "#finance-ops", "ts": f"{time.time():.6f}"}
     return {"ok": True, "echo": canonical_id}
 
