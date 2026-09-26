@@ -12,8 +12,8 @@
   --panel:rgba(255,255,255,.92);
 }
 *{box-sizing:border-box}
-html{background:#06060c}
-html,body{margin:0;padding:0}
+html{background:#06060c; scroll-padding-bottom:260px}
+html,body{margin:0;padding:0; scroll-behavior:smooth}
 body{
   color:var(--text); min-height:100vh;
   font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -73,17 +73,67 @@ header{
 }
 #banner a.ghost{padding:3px 10px; font-size:12px; text-decoration:none}
 
-/* ---------- layout ---------- */
-main{max-width:760px; margin:0 auto; padding:36px 16px 64px}
-.promptbox{
-  background:rgba(255,255,255,.95);
-  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,.4); border-radius:16px;
-  padding:18px 18px 14px; box-shadow:0 8px 32px rgba(0,0,0,.35);
-  transition:border-color .15s ease, box-shadow .15s ease;
+@property --snake-angle{
+  syntax:"<angle>";
+  inherits:false;
+  initial-value:0deg;
 }
-.promptbox:focus-within{border-color:#fff; box-shadow:0 12px 40px rgba(0,0,0,.45)}
-.promptbox.err{border-color:#FCA5A5; box-shadow:0 0 0 3px rgba(220,38,38,.10)}
+
+@keyframes snake-walk{
+  0%{--snake-angle:0deg}
+  100%{--snake-angle:360deg}
+}
+
+/* ---------- layout ---------- */
+main{max-width:760px; margin:0 auto; padding:24px 16px 230px}
+
+.promptbox-wrapper{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  width:min(760px, calc(100% - 32px)); z-index:30;
+  border-radius:20px; padding:2.5px;
+  background:conic-gradient(
+    from var(--snake-angle),
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.12) 65%,
+    rgba(168,85,247,0.5) 76%,
+    #C084FC 85%,
+    #38BDF8 93%,
+    #FFFFFF 98%,
+    rgba(255,255,255,0.12) 100%
+  );
+  animation:snake-walk 3.5s linear infinite;
+  box-shadow:0 12px 44px rgba(0,0,0,.5);
+}
+.promptbox-wrapper::before{
+  content:"";
+  position:absolute; inset:-4px; border-radius:24px;
+  background:conic-gradient(
+    from var(--snake-angle),
+    transparent 0%,
+    transparent 65%,
+    rgba(168,85,247,0.7) 80%,
+    rgba(56,189,248,0.95) 92%,
+    #FFFFFF 99%,
+    transparent 100%
+  );
+  filter:blur(14px);
+  opacity:0.95;
+  z-index:-1;
+  pointer-events:none;
+  animation:snake-walk 3.5s linear infinite;
+}
+
+.promptbox{
+  position:relative; z-index:1;
+  background:#FFFFFF;
+  border-radius:17.5px;
+  padding:18px 18px 14px;
+  transition:box-shadow .15s ease;
+}
+.promptbox:focus-within{
+  box-shadow:0 0 0 1px #fff;
+}
+.promptbox.err{box-shadow:0 0 0 3px rgba(220,38,38,.4)}
 textarea{
   width:100%; min-height:84px; max-height:220px; resize:vertical;
   background:transparent; border:0; color:var(--text); font-size:15px;
@@ -230,7 +280,7 @@ pre{
   transition:border-color .12s ease, color .12s ease;
 }
 .ghost:hover{color:var(--text); border-color:#C9C9C9}
-#empty{color:rgba(255,255,255,0.75); text-shadow:0 1px 4px rgba(0,0,0,0.8); text-align:center; padding:64px 0 48px; font-size:14px; font-weight:500}
+#empty{color:rgba(255,255,255,0.75); text-shadow:0 1px 4px rgba(0,0,0,0.8); text-align:center; padding:22vh 0 48px; font-size:15px; font-weight:500}
 
 /* ---------- toasts ---------- */
 #toasts{position:fixed; top:64px; right:16px; z-index:50; display:flex; flex-direction:column; gap:8px}
@@ -283,20 +333,22 @@ pre{
 </div>
 
 <main>
-  <div class="promptbox" id="promptbox">
-    <textarea id="prompt" placeholder="It's billing day. Find unpaid invoices, chase overdue ones with PayPal, escalate disputes to Jira, log to Notion, summarize in Slack…"></textarea>
-    <div class="prow">
-      <div class="chips">
-        <button class="chip" onclick="useChip(0)">Billing day (full run)</button>
-        <button class="chip" onclick="useChip(1)">Only &gt; ₹50,000</button>
-        <button class="chip" onclick="useChip(2)">What did we chase this week?</button>
+  <div class="promptbox-wrapper">
+    <div class="promptbox" id="promptbox">
+      <textarea id="prompt" placeholder="It's billing day. Find unpaid invoices, chase overdue ones with PayPal, escalate disputes to Jira, log to Notion, summarize in Slack…"></textarea>
+      <div class="prow">
+        <div class="chips">
+          <button class="chip" onclick="useChip(0)">Billing day (full run)</button>
+          <button class="chip" onclick="useChip(1)">Only &gt; ₹50,000</button>
+          <button class="chip" onclick="useChip(2)">What did we chase this week?</button>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="kbd" aria-hidden="true">⌘ + ↵</span>
+          <button id="runBtn" onclick="run()">Run</button>
+        </div>
       </div>
-      <div class="flex items-center gap-3">
-        <span class="kbd" aria-hidden="true">⌘ + ↵</span>
-        <button id="runBtn" onclick="run()">Run</button>
-      </div>
+      <div id="validation">Describe the billing task — e.g. “Chase overdue invoices”</div>
     </div>
-    <div id="validation">Describe the billing task — e.g. “Chase overdue invoices”</div>
   </div>
 
   <div id="runMeta" class="runmeta"></div>
@@ -392,7 +444,7 @@ function renderCard(ev){
     ${isApproval?approvalUI(ev):''}
   `;
   tl.appendChild(card);
-  card.scrollIntoView({block:'nearest', behavior:'smooth'});
+  card.scrollIntoView({block:'center', behavior:'smooth'});
 
   if(isApproval && ev.status === 'pending_approval'){
     card.dataset.hash = ev.request_hash; card.dataset.invoice = ev.invoice_id;
@@ -502,7 +554,7 @@ function finish(answer){
   f.classList.add('show');
   stopRun();
   toast('Run complete', 'ok');
-  f.scrollIntoView({behavior:'smooth', block:'nearest'});
+  f.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 function runAgain(){ resetView(); document.getElementById('prompt').value = CHIPS[0]; run(); }
