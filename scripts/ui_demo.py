@@ -91,8 +91,6 @@ def run_browser() -> int:
         # 1 — load
         page.goto(BASE, wait_until="networkidle")
         check(page.locator("header h1").inner_text() == "LedgerPilot", "header renders")
-        pill = page.locator("#statusPill").inner_text()
-        check("toolkits" in pill, f"status pill: {pill}")
         check(page.locator("#empty").is_visible(), "empty state visible")
         page.screenshot(path=str(SHOTS / "01-prompt.png"))
 

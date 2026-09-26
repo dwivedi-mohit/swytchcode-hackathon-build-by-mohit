@@ -268,9 +268,7 @@ pre{
 <header>
   <div class="brand">
     <h1>LedgerPilot</h1>
-    <span class="sub">AI Revenue Ops · Swytchcode × LangGraph</span>
   </div>
-  <div id="statusPill">checking…</div>
 </header>
 
 <div id="banner">
@@ -539,11 +537,16 @@ function retryStream(){ hideBanner(); if(runId && running) startStream(); }
 
 fetch('/healthz').then(r=>r.json()).then(h=>{
   const p = document.getElementById('statusPill');
-  const n = (h.toolkits||[]).length;
-  if(h.swx_mode === 'live' && n){ p.textContent = `● ${n} toolkits connected`; p.className='ok'; }
-  else { p.textContent = `● mock mode · ${n} toolkits wired`; p.className='warn'; }
+  if(p){
+    const n = (h.toolkits||[]).length;
+    if(h.swx_mode === 'live' && n){ p.textContent = `● ${n} toolkits connected`; p.className='ok'; }
+    else { p.textContent = `● mock mode · ${n} toolkits wired`; p.className='warn'; }
+  }
   if(h.llm === 'mock') toast('LLM running in deterministic mock mode', 'warn');
-}).catch(()=>{ const p=document.getElementById('statusPill'); p.textContent='● server offline'; p.className='warn'; });
+}).catch(()=>{
+  const p = document.getElementById('statusPill');
+  if(p){ p.textContent='● server offline'; p.className='warn'; }
+});
 
 document.getElementById('prompt').addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='Enter') run();
