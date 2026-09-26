@@ -21,9 +21,9 @@ npm install -g swytchcode            # if permission denied:
 
 cp .env.example .env                 # paste your GEMINI_API_KEY / GROQ_API_KEY
 ./scripts/setup.sh                   # swy init → get 5 toolkits → add tools → policy validate → doctor
-swy auth connect paypal              # repeat for: gmail, slack, jira, notion
-swy auth status                      # expect 5 connected
-python scripts/smoke_test.py         # GATE B: ≥3 PASS (target 5) — record the matrix
+swy auth connect gmail               # then: slack, notion, jira (paypal connect = broken upstream, skip)
+swy auth status                      # expect 4 connected (gmail slack notion jira)
+python scripts/smoke_test.py         # GATE B: ≥3 PASS (target 4–5) — record the matrix
 python scripts/verify_canonical_ids.sh   # all 7 IDs PASS → otherwise fix IDs (note below)
 python -m pytest tests/ -q           # 19 green
 python scripts/ui_demo.py            # 17 UI checks + fresh screenshots/video
@@ -35,6 +35,23 @@ MOCK_LLM=1 python -m server.main     # sanity UI at http://localhost:8000
 and `docs/FRONTEND_SPEC.md §6` (they are the same source of truth). Canonical IDs in the
 spec are marked *illustrative* until this step passes.
 
+**Auth gotchas (all verified live 2026-09-26):**
+- **Jira:** the Atlassian screen shows *"Access denied — requires access to a Jira site…"*
+  if your account has **no Jira site**. Create a free one first (`id.atlassian.com` →
+  Jira → pick a domain), then `swy auth connect jira`.
+- **Jira base URL:** after connect, `.swytchcode/integrations/manifest.json` → `Jira.jira@v1`
+  must use `https://api.atlassian.com/ex/jira/<cloudId>` (NOT `your-domain.atlassian.net`).
+  Get cloudId: `https://<your-site>.atlassian.net/_edge/tenant_info` → or post-connect,
+  call `https://api.atlassian.com/oauth/token/accessible-resources` with the credential
+  from the connect flow. **Do not re-run `swy get jira` after editing — it overwrites back.**
+  Verify with `swy exec jira.api.myself.list --json` (add via `swy add method` first).
+- **PayPal connect** currently fails upstream (`invalid client_ID or redirect_uri`) —
+  **not needed**: `invoicing_v2` has no auth block; sandbox invoice calls work as-is.
+- **Headless/SSH boxes:** `swy auth connect` prints no URL (browser-open fails silently).
+  Workaround that works: run a local pass-through proxy on `:8787` to
+  `api-v2.swytchcode.com`, launch `SWYTCHCODE_API_URL=http://127.0.0.1:8787 swy auth connect <p>`
+  in background, read `authorization_url` from the proxy log, paste it to the user's browser.
+
 **Dashboard chores (accounts — 30 min):**
 
 | Service | Do |
@@ -43,8 +60,8 @@ spec are marked *illustrative* until this step passes.
 | Gmail | send 4 self-addressed emails matching `seed/invoices.json` (Acme/Northwind/Bluebird/Cobalt) |
 | Notion | create DB **LedgerPilot Ops Log** with the 10 columns in `TECHNICAL_ARCHITECTURE §4.2` · Share → your integration |
 | Slack | private `#finance-ops` · invite the Swytchcode Slack bot/app |
-| Jira | free Cloud site · project key **OPS** · API token via `swy auth connect jira` |
-| PayPal | **sandbox** business + personal test accounts (Settings → API credentials) |
+| Jira | free Cloud site (REQUIRED before connect) · project key **OPS** · then fix manifest base URL (see auth gotchas) |
+| PayPal | sandbox endpoint already live for invoicing (`api-m.sandbox.paypal.com`) — connect is optional/broken upstream |
 
 ---
 
@@ -54,7 +71,7 @@ spec are marked *illustrative* until this step passes.
 ```bash
 git pull && source .venv/bin/activate
 ./scripts/setup.sh && swy auth status
-./scripts/auth_connect_all.sh        # YOUR terminal: browser opens per provider (gmail→slack→notion→jira→paypal)
+./scripts/auth_connect_all.sh        # YOUR terminal: browser opens per provider (skip paypal/jira if blocked — see auth gotchas)
 python scripts/smoke_test.py            # Gate B: ≥3 PASS on venue wifi
 ./scripts/verify_canonical_ids.sh       # Gate B IDs: 7/7 PASS
 # Kernel-policy demo (30s, judge-facing) — both commands print the guard firing:
