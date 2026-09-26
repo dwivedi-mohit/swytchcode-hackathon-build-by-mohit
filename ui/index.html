@@ -623,11 +623,11 @@ pre{
     </div>
     <div class="setting-row">
       <span>LLM Provider</span>
-      <span class="setting-val">Gemini ➔ Groq</span>
+      <span class="setting-val" id="sidebarLlmVal">Gemini ➔ Groq</span>
     </div>
     <div class="setting-row">
       <span>Swytchcode</span>
-      <span class="setting-val">5 Toolkits Wired</span>
+      <span class="setting-val" id="sidebarSwxVal">5 Toolkits Wired</span>
     </div>
     <div class="setting-row">
       <span>PayPal Gating</span>
@@ -651,7 +651,7 @@ pre{
       <span style="font-size:14px">⚙️</span>
       <span class="popover-title">Swytchcode Toolkits</span>
     </div>
-    <span class="popover-badge">5 Active</span>
+    <span class="popover-badge" id="popoverBadge">5 Active</span>
   </div>
   <div class="popover-tools-list">
     <div class="pop-tool-row">
@@ -698,7 +698,7 @@ pre{
     </div>
     <div class="pop-setting-row">
       <span>LLM Provider</span>
-      <span class="pop-setting-val">Gemini ➔ Groq</span>
+      <span class="pop-setting-val" id="popoverLlmVal">Gemini ➔ Groq</span>
     </div>
     <div class="pop-setting-row">
       <span>PayPal Gate</span>
@@ -1364,18 +1364,33 @@ function banner(text){ document.getElementById('bannerText').textContent = text;
 function hideBanner(){ document.getElementById('banner').classList.remove('show'); }
 function retryStream(){ hideBanner(); if(runId && running) startStream(); }
 
-fetch('/healthz').then(r=>r.json()).then(h=>{
-  const p = document.getElementById('statusPill');
-  if(p){
-    const n = (h.toolkits||[]).length;
-    if(h.swx_mode === 'live' && n){ p.textContent = `● ${n} toolkits connected`; p.className='ok'; }
-    else { p.textContent = `● mock mode · ${n} toolkits wired`; p.className='warn'; }
+async function checkBackendHealth(){
+  try{
+    const r = await fetch('/healthz');
+    if(!r.ok) throw new Error('status ' + r.status);
+    const h = await r.json();
+    const isMock = h.llm === 'mock';
+    const llmLabel = isMock ? 'Deterministic Mock' : (h.llm ? (h.llm.toUpperCase() + ' Live') : 'Gemini / Groq');
+    const swxLabel = `${(h.swx_mode || 'live').toUpperCase()} · ${(h.toolkits || []).length} Toolkits`;
+
+    const sl = document.getElementById('sidebarLlmVal'); if(sl) sl.textContent = llmLabel;
+    const pl = document.getElementById('popoverLlmVal'); if(pl) pl.textContent = llmLabel;
+    const ss = document.getElementById('sidebarSwxVal'); if(ss) ss.textContent = swxLabel;
+    const pb = document.getElementById('popoverBadge'); if(pb) pb.textContent = `${(h.toolkits || []).length} Active`;
+
+    hideBanner();
+    if(isMock){
+      toast('LLM in deterministic mock mode', 'warn');
+    }
+    if(h.active_run && !running){
+      runId = h.active_run;
+      startStream();
+    }
+  }catch(e){
+    banner('⚠️ Backend server offline — run: python -m server.main');
   }
-  if(h.llm === 'mock') toast('LLM running in deterministic mock mode', 'warn');
-}).catch(()=>{
-  const p = document.getElementById('statusPill');
-  if(p){ p.textContent='● server offline'; p.className='warn'; }
-});
+}
+checkBackendHealth();
 
 document.getElementById('prompt').addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='Enter') run();
