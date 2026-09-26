@@ -1954,6 +1954,284 @@
       "summary": "Create issue",
       "type": "method"
     },
+    "jira.api.myself.list": {
+      "desc": "Returns details for the current user.\n\n**[Permissions](#permissions) required:** Permission to access Jira.",
+      "inputs": [
+        {
+          "expand": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Jira.jira@v1",
+      "method_hash": "6be5efee45fdae5fd318c1db76448ec2c735f9f42f30b018d97abf2f148c373e",
+      "output": {
+        "schema": {
+          "properties": {
+            "accountId": {
+              "required": false,
+              "type": "string"
+            },
+            "accountType": {
+              "required": false,
+              "type": "string"
+            },
+            "active": {
+              "required": false,
+              "type": "boolean"
+            },
+            "appType": {
+              "required": false,
+              "type": "string"
+            },
+            "applicationRoles": {
+              "properties": {
+                "callback": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "items": {
+                  "items": {
+                    "properties": {
+                      "defaultGroups": {
+                        "required": false,
+                        "type": "[]STRING"
+                      },
+                      "defaultGroupsDetails": {
+                        "items": {
+                          "properties": {
+                            "groupId": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "name": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "self": {
+                              "required": false,
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "required": false,
+                        "type": "array"
+                      },
+                      "defined": {
+                        "required": false,
+                        "type": "boolean"
+                      },
+                      "groupDetails": {
+                        "items": {
+                          "properties": {
+                            "groupId": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "name": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "self": {
+                              "required": false,
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "required": false,
+                        "type": "array"
+                      },
+                      "groups": {
+                        "required": false,
+                        "type": "[]STRING"
+                      },
+                      "hasUnlimitedSeats": {
+                        "required": false,
+                        "type": "boolean"
+                      },
+                      "key": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "name": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "numberOfSeats": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "platform": {
+                        "required": false,
+                        "type": "boolean"
+                      },
+                      "remainingSeats": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "selectedByDefault": {
+                        "required": false,
+                        "type": "boolean"
+                      },
+                      "userCount": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "userCountDescription": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "max-results": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "pagingCallback": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "size": {
+                  "required": false,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "avatarUrls": {
+              "properties": {
+                "16x16": {
+                  "required": false,
+                  "type": "string"
+                },
+                "24x24": {
+                  "required": false,
+                  "type": "string"
+                },
+                "32x32": {
+                  "required": false,
+                  "type": "string"
+                },
+                "48x48": {
+                  "required": false,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "displayName": {
+              "required": false,
+              "type": "string"
+            },
+            "emailAddress": {
+              "required": false,
+              "type": "string"
+            },
+            "expand": {
+              "required": false,
+              "type": "string"
+            },
+            "groups": {
+              "properties": {
+                "callback": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "items": {
+                  "items": {
+                    "properties": {
+                      "groupId": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "name": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "self": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "max-results": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "pagingCallback": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "size": {
+                  "required": false,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "guest": {
+              "required": false,
+              "type": "boolean"
+            },
+            "key": {
+              "required": false,
+              "type": "string"
+            },
+            "locale": {
+              "required": false,
+              "type": "string"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "self": {
+              "required": false,
+              "type": "string"
+            },
+            "timeZone": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Get current user",
+      "type": "method"
+    },
     "jira.api.search.create1": {
       "desc": "Endpoint is currently being removed. [More details](https://developer.atlassian.com/changelog/#CHANGE-2046)\n\nSearches for issues using [JQL](https://confluence.atlassian.com/x/egORLQ).\n\nThere is a [GET](#api-rest-api-3-search-get) version of this resource that can be used for smaller JQL query expressions.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:** Issues are included in the response where the user has:\n\n *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.\n *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.",
       "inputs": [

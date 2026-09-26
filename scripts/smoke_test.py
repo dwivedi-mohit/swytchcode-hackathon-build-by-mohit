@@ -17,7 +17,7 @@ from agent import swx  # noqa: E402
 CHECKS = [
     ("gmail",   "gmail.user.messages.get",      {"userId": "me", "q": "is:unread", "maxResults": 1}, False),
     ("paypal",  "invoices.invoicing.invoices.list",     {},                                   False),
-    ("jira",    "jira.api.search.create1",       {"jql": "order by created DESC", "maxResults": 1}, False),
+    ("jira",    "jira.api.search.create1",       {"body": {"jql": "order by created DESC", "maxResults": 1}}, False),
     ("notion",  "notion.query.create",   {"data_source_id": "ledgerpilot-ops-log"}, False),
     ("slack",   "slack.chat.postmessage.create",   {"body": {"channel": "#finance-ops", "text": "LedgerPilot smoke test ✅"}}, True),
 ]
@@ -37,7 +37,10 @@ def main() -> int:
         import re
         m = re.search(r'"error":"([^"]{1,160})', err)  # extract JSON error field from CLI stderr
         if m:
-            err = m.group(1).encode().decode("unicode_escape")
+            try:
+                err = m.group(1).encode().decode("unicode_escape")
+            except UnicodeDecodeError:  # raw path separators etc. — keep verbatim
+                err = m.group(1)
         rows.append((toolkit, cid, "PASS" if ok else "FAIL", ms, err[:100]))
 
     w = max(len(r[0]) for r in rows) + 2

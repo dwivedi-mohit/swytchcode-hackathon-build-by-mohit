@@ -173,8 +173,8 @@
   },
   "Jira.jira@v1": {
     "version": "v1",
-    "sandbox_endpoint": "http://localhost",
-    "production_endpoint": "https://your-domain.atlassian.net",
+    "sandbox_endpoint": "https://api.atlassian.com/ex/jira/eae46b2a-f01f-4350-a27b-a0ec0cc081e7",
+    "production_endpoint": "https://api.atlassian.com/ex/jira/eae46b2a-f01f-4350-a27b-a0ec0cc081e7",
     "methods": 616,
     "auth": {
       "provider_slug": "Jira",
