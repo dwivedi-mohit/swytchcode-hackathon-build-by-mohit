@@ -21,7 +21,7 @@ def jira_escalate_node(state: InvoiceState) -> dict:
             "fields": {
                 "project": {"key": os.getenv("JIRA_PROJECT_KEY", "OPS")},
                 "summary": f"Dispute: {inv['vendor']} #{inv['id']}",
-                "issuetype": {"name": "Bug"},
+                "issuetype": {"name": os.getenv("JIRA_ISSUE_TYPE", "Bug")},
                 "priority": {"name": priority},
                 "description": (
                     f"Invoice {inv['id']} ({inv['vendor']}, {inv.get('currency','INR')} {inv.get('amount')}) "

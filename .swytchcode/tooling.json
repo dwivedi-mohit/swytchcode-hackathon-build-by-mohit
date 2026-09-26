@@ -4776,6 +4776,123 @@
       "summary": "Sends a message to a channel.",
       "type": "method"
     },
+    "slack.conversations.create.create": {
+      "desc": "Initiates a public or private channel-based conversation",
+      "inputs": [
+        {
+          "token": {
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "is_private": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "name": {
+                  "required": false,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Slack.slack@1.7.0",
+      "method_hash": "e937457a3c044c54b99e170416121b0e95ba1ee1ecf08df6d080dee27cdbb49b",
+      "output": {
+        "schema": {
+          "properties": {
+            "channel": {
+              "required": true,
+              "type": "any"
+            },
+            "ok": {
+              "required": true,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "channel",
+            "ok"
+          ]
+        },
+        "status": 200
+      },
+      "summary": "Initiates a public or private channel-based conversation",
+      "type": "method"
+    },
+    "slack.conversations.join.create": {
+      "desc": "Joins an existing conversation.",
+      "inputs": [
+        {
+          "token": {
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "channel": {
+                  "required": false,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Slack.slack@1.7.0",
+      "method_hash": "9a822b13db4943c114188f69dc88a98e304aa54758c3d7923b0b755f80244aa9",
+      "output": {
+        "schema": {
+          "properties": {
+            "channel": {
+              "required": true,
+              "type": "any"
+            },
+            "ok": {
+              "required": true,
+              "type": "boolean"
+            },
+            "response_metadata": {
+              "properties": {
+                "warnings": {
+                  "required": false,
+                  "type": "[]STRING"
+                }
+              },
+              "type": "object"
+            },
+            "warning": {
+              "required": false,
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel",
+            "ok"
+          ]
+        },
+        "status": 200
+      },
+      "summary": "Joins an existing conversation.",
+      "type": "method"
+    },
     "slack.conversations.list.list": {
       "desc": "Lists all channels in a Slack team.",
       "inputs": [
@@ -4849,6 +4966,71 @@
         "status": 200
       },
       "summary": "Lists all channels in a Slack team.",
+      "type": "method"
+    },
+    "slack.users.list.list": {
+      "desc": "Lists all users in a Slack team.",
+      "inputs": [
+        {
+          "token": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "limit": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "cursor": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "include_locale": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        }
+      ],
+      "integration": "Slack.slack@1.7.0",
+      "method_hash": "2343d68dc3c568b3530c95c259e54cea4c06dbd6f1f4b8043854a19b1f33a113",
+      "output": {
+        "schema": {
+          "properties": {
+            "cache_ts": {
+              "required": true,
+              "type": "integer"
+            },
+            "members": {
+              "required": true,
+              "type": "[]ANY"
+            },
+            "ok": {
+              "required": true,
+              "type": "boolean"
+            },
+            "response_metadata": {
+              "required": false,
+              "type": "any"
+            }
+          },
+          "required": [
+            "cache_ts",
+            "members",
+            "ok"
+          ]
+        },
+        "status": 200
+      },
+      "summary": "Lists all users in a Slack team.",
       "type": "method"
     }
   },

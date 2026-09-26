@@ -45,12 +45,29 @@ spec are marked *illustrative* until this step passes.
   call `https://api.atlassian.com/oauth/token/accessible-resources` with the credential
   from the connect flow. **Do not re-run `swy get jira` after editing — it overwrites back.**
   Verify with `swy exec jira.api.myself.list --json` (add via `swy add method` first).
-- **PayPal connect** currently fails upstream (`invalid client_ID or redirect_uri`) —
-  **not needed**: `invoicing_v2` has no auth block; sandbox invoice calls work as-is.
+- **PayPal connect** fails upstream (`invalid client_ID or redirect_uri` — Swytchcode's
+  PayPal OAuth app), and the invoicing bundle injects **no auth**, so live PayPal calls
+  return **401**. Known-blocked: smoke shows an honest PayPal FAIL; the agent degrades
+  to a visible trace error (E5). Mock mode still demos the full PayPal flow.
+- **`swy exec` exits 0 on HTTP 4xx/5xx** (payload carries `status_code`/`error_category`
+  instead). `agent/swx.py` now detects API errors + unwraps the `{"data": …}` envelope —
+  never trust exit codes alone when writing new checks.
+- **Slack scopes are minimal** (`channels:read, im:read, users:read, chat:write, im:write`):
+  the bot canNOT create/join channels. Create the public channel yourself, then
+  `/invite @swytchcode` inside it — post is `not_in_channel` until invited.
 - **Headless/SSH boxes:** `swy auth connect` prints no URL (browser-open fails silently).
   Workaround that works: run a local pass-through proxy on `:8787` to
   `api-v2.swytchcode.com`, launch `SWYTCHCODE_API_URL=http://127.0.0.1:8787 swy auth connect <p>`
   in background, read `authorization_url` from the proxy log, paste it to the user's browser.
+
+**Env knobs (all in `.env`, gitignored):**
+
+| Var | Purpose | This build |
+|---|---|---|
+| `LLM_PROVIDER` | gemini (default) or groq first — gemini free tier = **20 req/day** | `groq` |
+| `JIRA_PROJECT_KEY` / `JIRA_ISSUE_TYPE` | escalate target (code default `OPS`/`Bug`) | `SCRUM` / `Task` |
+| `SLACK_CHANNEL` | summary channel (code default `#finance-ops`) | `#finance-ops` |
+| `NOTION_DATA_SOURCE_ID` | the ops-log DB **UUID** (required for live Notion) | set after DB created |
 
 **Dashboard chores (accounts — 30 min):**
 
@@ -58,9 +75,9 @@ spec are marked *illustrative* until this step passes.
 |---|---|
 | Google Cloud | enable Gmail API · OAuth consent = Testing · add your account as test user |
 | Gmail | send 4 self-addressed emails matching `seed/invoices.json` (Acme/Northwind/Bluebird/Cobalt) |
-| Notion | create DB **LedgerPilot Ops Log** with the 10 columns in `TECHNICAL_ARCHITECTURE §4.2` · Share → your integration |
-| Slack | private `#finance-ops` · invite the Swytchcode Slack bot/app |
-| Jira | free Cloud site (REQUIRED before connect) · project key **OPS** · then fix manifest base URL (see auth gotchas) |
+| Notion | create DB **LedgerPilot Ops Log** with the 10 columns in `TECHNICAL_ARCHITECTURE §4.2` · Share → your integration · put the DB **UUID** in `NOTION_DATA_SOURCE_ID` |
+| Slack | **public** `#finance-ops` → `/invite @swytchcode` (bot cannot self-join: no `channels:join`) |
+| Jira | free Cloud site (REQUIRED before connect) · project key **OPS** (or set `JIRA_PROJECT_KEY`/`JIRA_ISSUE_TYPE`) · then fix manifest base URL (see auth gotchas) |
 | PayPal | sandbox endpoint already live for invoicing (`api-m.sandbox.paypal.com`) — connect is optional/broken upstream |
 
 ---
