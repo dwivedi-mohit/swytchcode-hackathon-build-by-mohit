@@ -32,10 +32,24 @@ button{font-family:inherit}
   display:none;
 }
 
-/* ---------- floating buttons & header ---------- */
-.top-left-btn{
+/* ---------- top-left brand & toggle ---------- */
+.top-brand{
   position:fixed; top:12px; left:16px; z-index:35;
-  width:42px; height:42px; border-radius:12px;
+  display:flex; align-items:center; gap:12px;
+  transition:all .22s cubic-bezier(.16,1,.3,1);
+}
+.brand-logo{
+  height:36px; width:auto; object-fit:contain; cursor:pointer;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.7)) drop-shadow(0 0 16px rgba(168,85,247,.45));
+  transition:transform .2s ease, filter .2s ease;
+  user-select:none;
+}
+.brand-logo:hover{
+  transform:scale(1.04);
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.85)) drop-shadow(0 0 22px rgba(192,132,252,.7));
+}
+.top-left-btn{
+  width:40px; height:40px; border-radius:12px;
   background:rgba(255,255,255,.15);
   -webkit-backdrop-filter:blur(24px) saturate(180%);
   backdrop-filter:blur(24px) saturate(180%);
@@ -43,7 +57,7 @@ button{font-family:inherit}
   border-top:1px solid rgba(255,255,255,.55);
   color:#FFFFFF; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
-  font-size:17px;
+  font-size:16px;
   box-shadow:inset 0 1px 1px 0 rgba(255,255,255,.5), inset 0 -1px 1px 0 rgba(0,0,0,.15), 0 8px 32px rgba(0,0,0,.35);
   transition:all .2s cubic-bezier(.16,1,.3,1);
 }
@@ -52,6 +66,9 @@ button{font-family:inherit}
   border-color:rgba(255,255,255,.6);
   transform:scale(1.05);
   box-shadow:0 0 20px rgba(192,132,252,.5), 0 8px 32px rgba(0,0,0,.45);
+}
+body.sidebar-docked .top-brand{
+  opacity:0; pointer-events:none; transform:translateX(-12px);
 }
 
 /* ---------- header (visually blank) ---------- */
@@ -151,8 +168,8 @@ header{
 }
 #sidebarBackdrop.open{opacity:1; pointer-events:auto}
 #sidebar{
-  position:fixed; top:0; left:0; bottom:0; width:290px; max-width:85vw;
-  z-index:50; background:rgba(12,12,22,.92);
+  position:fixed; top:0; left:0; bottom:0; width:280px; max-width:85vw;
+  z-index:50; background:rgba(12,12,22,.94);
   -webkit-backdrop-filter:blur(28px) saturate(180%); backdrop-filter:blur(28px) saturate(180%);
   border-right:1px solid rgba(255,255,255,.14);
   transform:translateX(-100%); transition:transform .28s cubic-bezier(.16,1,.3,1);
@@ -160,37 +177,60 @@ header{
 }
 #sidebar.open{transform:translateX(0)}
 .sidebar-head{
-  padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+  padding:14px 14px 12px 16px; display:flex; align-items:center; justify-content:space-between;
   border-bottom:1px solid rgba(255,255,255,.08);
 }
+.sidebar-brand{display:flex; align-items:center; gap:8px}
+.sidebar-logo{
+  height:30px; width:auto; object-fit:contain;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.7));
+}
+.sidebar-hide-btn{
+  background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.18);
+  color:#DDD; width:30px; height:30px; border-radius:8px;
+  display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:12px; transition:all .15s ease;
+}
+.sidebar-hide-btn:hover{
+  background:rgba(255,255,255,.22); color:#FFF; border-color:rgba(255,255,255,.4);
+  transform:scale(1.05);
+}
+.sidebar-action-wrap{padding:12px 14px 4px}
 .new-run-btn{
-  flex:1; margin-right:10px; background:rgba(255,255,255,.10);
+  width:100%; background:rgba(255,255,255,.10);
   border:1px solid rgba(255,255,255,.2); color:#FFF; border-radius:10px;
   padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s ease;
 }
 .new-run-btn:hover{background:rgba(255,255,255,.2); border-color:#FFF}
-.sidebar-close{
-  background:transparent; border:0; color:#888; font-size:18px; cursor:pointer;
-  padding:4px 8px; border-radius:8px; line-height:1;
-}
-.sidebar-close:hover{color:#FFF; background:rgba(255,255,255,.1)}
-.sidebar-history{flex:1; overflow-y:auto; padding:12px 10px}
+.sidebar-history{flex:1; overflow-y:auto; padding:8px 10px}
 .history-section-title{
-  font-size:11px; text-transform:uppercase; letter-spacing:.08em;
-  color:#666; padding:6px 8px 4px; font-weight:600;
+  font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;
+  color:#777; padding:6px 8px 4px; font-weight:600;
 }
 .history-item{
-  padding:9px 12px; border-radius:9px; cursor:pointer; font-size:13px;
+  padding:8px 10px; border-radius:8px; cursor:pointer; font-size:12.5px;
   color:#CCC; display:flex; flex-direction:column; gap:2px;
-  transition:all .12s ease; margin-bottom:3px;
+  transition:all .12s ease; margin-bottom:2px;
 }
 .history-item:hover{background:rgba(255,255,255,.08); color:#FFF}
 .history-item.active{background:rgba(255,255,255,.12); color:#FFF; font-weight:550}
 .history-item .hi-title{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .history-item .hi-meta{font-size:11px; color:#777; display:flex; justify-content:space-between}
+
+.sidebar-toolkits{
+  padding:6px 10px 10px; border-top:1px solid rgba(255,255,255,.08);
+}
+.sidebar-tk-list{display:flex; flex-direction:column; gap:2px}
+.sidebar-tk-item{
+  display:flex; align-items:center; gap:8px; padding:5px 8px;
+  border-radius:7px; font-size:11.5px; color:#CCC;
+}
+.sidebar-tk-item .tk-name{font-weight:600; color:#EEE}
+.sidebar-tk-item .tk-sub{margin-left:auto; font-size:10px; color:#777}
+
 .sidebar-settings{
-  padding:14px 16px; border-top:1px solid rgba(255,255,255,.08);
+  padding:12px 14px; border-top:1px solid rgba(255,255,255,.08);
   font-size:12px; color:#888; background:rgba(0,0,0,.25);
 }
 .setting-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
@@ -479,6 +519,26 @@ pre{
 .toast.warn:before{background:var(--warn)}
 .toast.error:before{background:var(--err)}
 
+@media (min-width:840px){
+  #sidebarBackdrop.open{display:none}
+  body.sidebar-docked main{
+    margin-left:280px; width:calc(100% - 280px);
+  }
+  body.sidebar-docked .promptbox-wrapper{
+    left:calc(280px + (100vw - 280px)/2);
+    width:min(740px, calc(100vw - 320px));
+  }
+  body.sidebar-docked .bottom-left-btn{
+    opacity:0; pointer-events:none; transform:scale(0.9);
+  }
+  main{
+    transition:margin-left .28s cubic-bezier(.16,1,.3,1), width .28s cubic-bezier(.16,1,.3,1);
+  }
+  .promptbox-wrapper{
+    transition:left .28s cubic-bezier(.16,1,.3,1), width .28s cubic-bezier(.16,1,.3,1);
+  }
+}
+
 @media (max-width:768px){
   .toolkits-strip{display:none}
   .kpi-strip{grid-template-columns:repeat(2, 1fr)}
@@ -508,13 +568,54 @@ pre{
 <div id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
 <aside id="sidebar">
   <div class="sidebar-head">
-    <button class="new-run-btn" onclick="newRun()"><span>＋</span> New Run</button>
-    <button class="sidebar-close" onclick="toggleSidebar(false)">✕</button>
+    <div class="sidebar-brand">
+      <img src="/static/assets/logo.png" alt="LedgerPilot" class="sidebar-logo" />
+    </div>
+    <button class="sidebar-hide-btn" onclick="toggleSidebar(false)" title="Hide sidebar (◀)">
+      <span>◀</span>
+    </button>
   </div>
+
+  <div class="sidebar-action-wrap">
+    <button class="new-run-btn" onclick="newRun()"><span>＋</span> New Run</button>
+  </div>
+
   <div class="sidebar-history">
     <div class="history-section-title">Run History</div>
     <div id="historyList"></div>
   </div>
+
+  <div class="sidebar-toolkits">
+    <div class="history-section-title">Connected Toolkits</div>
+    <div class="sidebar-tk-list">
+      <div class="sidebar-tk-item">
+        <span class="tk-dot"></span>
+        <span class="tk-name">✉️ Gmail</span>
+        <span class="tk-sub">Invoices Intake</span>
+      </div>
+      <div class="sidebar-tk-item">
+        <span class="tk-dot"></span>
+        <span class="tk-name">💳 PayPal</span>
+        <span class="tk-sub">Draft & Chase</span>
+      </div>
+      <div class="sidebar-tk-item">
+        <span class="tk-dot"></span>
+        <span class="tk-name">🎫 Jira</span>
+        <span class="tk-sub">Dispute Tickets</span>
+      </div>
+      <div class="sidebar-tk-item">
+        <span class="tk-dot"></span>
+        <span class="tk-name">📓 Notion</span>
+        <span class="tk-sub">Audit Ops Log</span>
+      </div>
+      <div class="sidebar-tk-item">
+        <span class="tk-dot"></span>
+        <span class="tk-name">💬 Slack</span>
+        <span class="tk-sub">Team Ops Alert</span>
+      </div>
+    </div>
+  </div>
+
   <div class="sidebar-settings">
     <div class="setting-row">
       <span>Sound Effects</span>
@@ -535,10 +636,13 @@ pre{
   </div>
 </aside>
 
-<!-- Top-Left Sidebar Trigger Button -->
-<button id="sidebarToggleBtn" class="top-left-btn" onclick="toggleSidebar(true)" title="Open Run History (☰)">
-  <span>☰</span>
-</button>
+<!-- Top-Left Floating Brand (When sidebar is hidden) -->
+<div id="topBrand" class="top-brand">
+  <button id="sidebarToggleBtn" class="top-left-btn" onclick="toggleSidebar(true)" title="Show sidebar (☰)">
+    <span>☰</span>
+  </button>
+  <img src="/static/assets/logo.png" alt="LedgerPilot" class="brand-logo" onclick="toggleSidebar(true)" title="Show sidebar" />
+</div>
 
 <!-- Bottom-Left Toolkits & Settings Trigger & Popover -->
 <div id="toolsPopover" class="tools-popover" role="dialog" aria-label="Toolkits & Settings">
@@ -803,15 +907,53 @@ document.addEventListener('keydown', (e) => {
 function toggleSidebar(open) {
   const sb = document.getElementById('sidebar');
   const bd = document.getElementById('sidebarBackdrop');
-  if (open) {
+  const isDesktop = window.innerWidth >= 840;
+  
+  let targetOpen;
+  if (open !== undefined) {
+    targetOpen = !!open;
+  } else {
+    targetOpen = !sb.classList.contains('open');
+  }
+
+  if (targetOpen) {
     sb.classList.add('open');
-    bd.classList.add('open');
+    if (!isDesktop) bd.classList.add('open');
+    if (isDesktop) document.body.classList.add('sidebar-docked');
+    localStorage.setItem('lp_sidebar_open', 'true');
     renderHistory();
   } else {
     sb.classList.remove('open');
     bd.classList.remove('open');
+    document.body.classList.remove('sidebar-docked');
+    localStorage.setItem('lp_sidebar_open', 'false');
   }
 }
+
+function initSidebar() {
+  const isDesktop = window.innerWidth >= 840;
+  const pref = localStorage.getItem('lp_sidebar_open');
+  const shouldOpen = pref === null ? true : pref === 'true'; // default: always shown!
+  if (isDesktop && shouldOpen) {
+    toggleSidebar(true);
+  } else {
+    toggleSidebar(false);
+  }
+}
+
+window.addEventListener('resize', () => {
+  const isDesktop = window.innerWidth >= 840;
+  const sb = document.getElementById('sidebar');
+  const bd = document.getElementById('sidebarBackdrop');
+  if (isDesktop) {
+    if (bd) bd.classList.remove('open');
+    if (sb && sb.classList.contains('open')) {
+      document.body.classList.add('sidebar-docked');
+    }
+  } else {
+    document.body.classList.remove('sidebar-docked');
+  }
+});
 
 function saveRunToHistory(id, promptText, summaryText, stats) {
   try {
@@ -859,7 +1001,9 @@ function renderHistory() {
 }
 
 function loadHistoryRun(id) {
-  toggleSidebar(false);
+  if (window.innerWidth < 840) {
+    toggleSidebar(false);
+  }
   try {
     const list = JSON.parse(localStorage.getItem('lp_runs') || '[]');
     const found = list.find(r => r.id === id);
@@ -875,7 +1019,9 @@ function loadHistoryRun(id) {
 }
 
 function newRun() {
-  toggleSidebar(false);
+  if (window.innerWidth < 840) {
+    toggleSidebar(false);
+  }
   resetView();
   const p = document.getElementById('prompt');
   p.value = '';
@@ -1236,6 +1382,7 @@ document.getElementById('prompt').addEventListener('keydown', e=>{
 });
 
 renderHistory();
+initSidebar();
 
 /* animated background: pause when tab hidden, tolerate autoplay policies */
 const bgVideo = document.getElementById('bgVideo');
