@@ -141,7 +141,12 @@ ledgerpilot/
 │   ├── main.py                      # FastAPI app, /run, /healthz, static mount
 │   └── stream.py                    # graph.stream → SSE event translation
 ├── ui/
-│   └── index.html                   # single-page prompt + trace UI (spec: FRONTEND_SPEC.md)
+│   ├── index.html                   # single-page prompt + trace UI (spec: FRONTEND_SPEC.md)
+│   ├── assets/
+│   │   ├── bg.mp4                   # 1080p ambient background loop (transcoded, ~4.3MB)
+│   │   └── bg.jpg                   # poster image fallback
+│   └── vendor/
+│       └── tailwind.js              # locally vendored Tailwind Play CDN (offline/venue safe)
 ├── seed/
 │   └── invoices.json                # 4 invoices: overdue / disputed / due-soon / paid
 ├── scripts/

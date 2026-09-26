@@ -1,139 +1,136 @@
 # Frontend Specification Document
 
-**Product:** LedgerPilot — AI Revenue Operations Agent
-**Version:** v1.0 · **Date:** 25 September 2026
-**Scope:** design system for the single-page trace UI (`ui/index.html`) + the complete API &
-integration spec for all five Swytchcode toolkits.
+**Product:** LedgerPilot — AI Revenue Operations Agent  
+**Version:** v2.0 · **Date:** 26 September 2026  
+**Scope:** design system for the single-page trace UI (`ui/index.html`) + ambient background integration + the complete API & integration spec for all five Swytchcode toolkits.
 
 ---
 
 ## 1. Design Intent
 
-A **dark, terminal-inspired operator console**. The UI's job is to make the agent's reasoning and
-Swytchcode calls legible on a projector in ≤2.5 minutes — not to win a beauty contest (UX is 5%
-of the rubric). One screen, one column, no navigation.
+A **light, Codex/OpenAI-inspired operator console** with subtle ambient motion and frosted-glass surfaces. The UI's job is to make the agent's multi-step revenue ops reasoning and Swytchcode calls crystal-clear on a projector or screen in ≤2.5 minutes while looking modern, polished, and calm.
 
-Archetype: developer-tool / observability dashboard. Think "incident timeline", not "marketing
-site."
+Key qualities:
+- **Clean light palette:** White frosted surfaces over subtle, desaturated ambient loop motion.
+- **Single-column focus:** Centered composer prompt box followed by a linear, uncluttered execution timeline.
+- **Zero build step:** Single HTML file with locally vendored Tailwind runtime (`ui/vendor/tailwind.js`). Works 100% offline at venues with zero npm/node overhead.
+- **Strict accessibility:** Text contrast passes WCAG AAA standards across all states; `prefers-reduced-motion` cleanly stops all background movement.
 
 ---
 
 ## 2. Color Palette
 
-| Token | Hex | Usage |
+| Token | Hex / Value | Usage |
 |---|---|---|
-| `--bg` | `#0B0E14` | page background |
-| `--surface` | `#141824` | cards, prompt box, header |
-| `--surface-2` | `#1C2130` | nested blocks (request/response JSON), hover |
-| `--border` | `#2A3142` | 1px borders, dividers |
-| `--text` | `#E6E9F0` | primary text |
-| `--text-dim` | `#8B93A7` | timestamps, labels, secondary text |
-| `--primary` | `#4F8CFF` | Run button, focus rings, links, active step |
-| `--primary-hover` | `#3D78E6` | Run button hover |
-| `--success` | `#2FBF71` | status pills: ok, APPROVED, toolkit connected |
-| `--warning` | `#E8A33D` | amber cards: pending approval, failover, fallback labels |
-| `--error` | `#E05252` | failed calls, validation errors, DENY |
-| `--accent` | `#9B6DFF` | brand accent: logo mark, step numbers |
-| `--code-key` | `#7EC3FF` | JSON keys |
-| `--code-str` | `#A8D97A` | JSON string values |
+| `--bg` | `#FAFAFA` | Page root background |
+| `--panel` | `rgba(255, 255, 255, 0.92)` | Cards, prompt composer, result panel (with backdrop blur) |
+| `--border` | `#ECECEC` | Hairline dividers, details borders |
+| `--border-2` | `#E0E0E0` | Card borders, chip outlines, input borders |
+| `--text` | `#0D0D0D` | Primary headers, card titles, Run button |
+| `--dim` | `#666666` | Secondary labels, chip text, action button labels |
+| `--faint` | `#9B9B9B` | Timestamps, step indices (`01`, `02`), shortcut cues |
+| `--ok` | `#15803D` | Success pills, approved state, green timeline rail dots |
+| `--warn` | `#B45309` | Amber warning pills, pending approval cards & rail dots, demo data |
+| `--err` | `#DC2626` | Error pills, denied state, red timeline rail dots |
 
-**Contrast rule:** all text ≥ 4.5:1 against its background. Status is **never color-only** — every
-pill carries text (and optional icon glyph), for color-blind safety and projector washout.
+**Contrast rule:** All text satisfies ≥ 4.5:1 contrast against translucent panel backgrounds. Status indicators combine textual badges with status-colored dots for color-blind safety and projector clarity.
 
 ---
 
 ## 3. Typography
 
-| Role | Font | Size / weight | Notes |
+| Role | Font | Size / Weight | Notes |
 |---|---|---|---|
-| UI / body | `Inter, ui-sans-serif, system-ui, sans-serif` | 14px / 400, line-height 1.5 | system stack — no font downloads |
-| Header title | same | 18px / 600 | "LedgerPilot" + version |
-| Card title (node name) | same | 13px / 600, uppercase, letter-spacing 0.06em | e.g. `PAYPAL_CHASE` |
-| Reasoning text | same | 14px / 400 italic | agent's stated reasoning |
-| Labels (toolkit, canonical ID) | `ui-monospace, SFMono-Regular, Menlo, monospace` | 12px / 500 | monospace = machine data |
-| JSON blocks | monospace | 12px / 400, line-height 1.45 | pre-wrap, max-height 220px, scroll |
-| Final answer | same | 15px / 400, line-height 1.6 | largest body text — it's the payoff |
-| Buttons | same | 14px / 600 | sentence case: "Run", "Approve", "Deny" |
-
-Rules: max 3 sizes visible at once; no centered paragraphs; tabular numerals for amounts.
+| UI / body | `ui-sans-serif, system-ui, -apple-system, sans-serif` | 14px / 400, line-height 1.5 | Native system font stack — zero webfont downloads |
+| Header title | same | 15px / 650 | Clean wordmark: "LedgerPilot" |
+| Header subtitle | same | 12px / 400 | "AI Revenue Ops · Swytchcode × LangGraph" |
+| Card node title | same | 13.5px / 600 | Sentence case e.g. `paypal_chase` |
+| Step numbers | `ui-monospace, SFMono-Regular, Menlo, monospace` | 11px / 500 | Zero-padded: `01`, `02`, `03` |
+| Reasoning text | system sans | 13.5px / 400, line-height 1.55 | Normal style (not italic), clear neutral-700 `#4A4A4A` |
+| Tool & command chips | monospace | 11.5px / 400 | `swy exec <canonical_id>`, toolkit name badges |
+| JSON blocks | monospace | 12px / 400 | Syntax-highlighted keys (teal), strings (green), numbers (amber) |
+| Final answer | system sans | 15px / 400, line-height 1.65 | Styled prose with bold entities and code chips |
+| Buttons | system sans | 13–13.5px / 550 | Black solid ("Run", "Approve") or subtle outline ("Deny") |
 
 ---
 
 ## 4. Component Styles
 
-### 4.1 Header (sticky, height 56px)
-`--surface` bg, 1px bottom `--border`. Left: accent square (24px, `--accent`) + "LedgerPilot" +
-dim subtitle "AI Revenue Ops · Swytchcode × LangGraph". Right: **connection pill** —
-"● 5 toolkits connected" (`--success`) or "● degraded: seed intake" (`--warning`).
+### 4.1 Header (sticky, height 52px)
+Translucent frosted glass (`rgba(255,255,255,0.78)` with `backdrop-filter: blur(14px)`), bottom hairline border.
+- **Left:** Minimal brand wordmark "LedgerPilot" and faint subtitle.
+- **Right:** Status chip pill (`#statusPill`) indicating connected toolkits or mock mode ("● 5 toolkits connected" / "● mock mode · 5 toolkits wired").
 
-### 4.2 Prompt box (fixed under header)
-- Container: `--surface`, 1px `--border`, radius 10px, padding 16px, max-width 900px, centered
-- `<textarea>`: transparent bg, `--text`, 15px, min-height 72px, auto-grow to 160px, no resize
-- Placeholder: *"It's billing day. Find unpaid invoices, chase overdue ones with PayPal,
-  escalate disputes to Jira, log to Notion, summarize in Slack…"*
-- Footer row inside container: left = hint chips (3 clickable demo prompts), right = **Run button**
-- **Run button:** `--primary` bg, white text, radius 8px, padding 10px 22px, hover
-  `--primary-hover`; disabled state: opacity .5, cursor not-allowed, label "Running…"
-- Validation error (E1): message under box in `--error`, 13px; border pulses `--error` once
+### 4.2 Centered Prompt Composer
+- **Container:** Frosted panel (`--panel`, 16px radius, soft shadow, focus-within ring).
+- **Textarea:** Borderless, 15px typography, vertical resize, neutral placeholder.
+- **Controls row:**
+  - Quick-fill prompt chips: `Billing day (full run)` · `Only > ₹50,000` · `What did we chase this week?`
+  - Keyboard hint: `⌘ + ↵`
+  - Primary button: Solid black `#0D0D0D`, rounded pill, white text. Transitions to disabled "Running…" state during stream.
+- **Validation cue:** Smooth inline red message + subtle border pulse if prompt < 10 characters.
 
-**Demo prompt chips** (click = fill textarea): `Billing day (full run)` · `Only > ₹50,000` ·
-`What did we chase this week?` — chip style: `--surface-2`, 1px border, radius 999px, 12px text.
+### 4.3 Live Run Metadata
+Appears immediately on stream start:
+`Run <run_id> · <elapsed>s` with tabular numeric elapsed timer, clearing on reset.
 
-### 4.3 Trace timeline (main column)
-Vertical feed, max-width 900px, 16px gap between cards, left rail 2px `--border` connecting
-step dots (10px circles, `--accent` fill when done, pulsing when active).
+### 4.4 Trace Timeline
+- **Layout:** Vertical container with left timeline rail (`1px solid #E6E6E6`).
+- **Rail dots:** 8px circles positioned on the rail, colored by node status:
+  - Green (`--ok`): ok / approved
+  - Amber (`--warn`): pending approval
+  - Red (`--err`): failed / denied
+- **Cards:** Hairline separator between steps, entering with smooth 160ms ease-out animation.
+- **Headers:** Step number · node name · toolkit chip · status pill · timestamp.
+- **Reasoning:** Clean neutral prose explaining the agent's logic.
+- **Swytchcode Command Chip:** Monospace badge showing the canonical ID executed (`swy exec <id>`).
+- **Inspection Details:** Collapsible `<details>` for `request` and `response` payloads with clean JSON syntax coloring.
+- **Decision Line:** Muted footer row detailing the step's branch choice.
 
-### 4.4 Trace card (the core component)
-- `--surface`, 1px `--border`, radius 10px, padding 14px 16px
-- **Header row:** step dot number (accent) · node name (uppercase mono) · toolkit pill ·
-  status pill · timestamp (`--text-dim`, 12px, right)
-- **Reasoning body:** italic 14px paragraph
-- **Canonical ID line:** mono chip `swy exec invoices.invoicing.send.create` on `--surface-2`
-- **Collapsible JSON** (`▸ request` / `▸ response`): `<details>` styled, mono 12px, syntax-tinted
-  keys/values; `Authorization` rendered as `"***"`
-- **Decision footer:** 1px top border, prefix `→ decision:` in `--accent`, then text
-- **Status pills:** `ok` (success) · `pending_approval` (warning, pulsing) · `approved`
-  (success) · `failed` (error) · `skipped` (dim) · `seed` (warning, label "DEMO DATA")
-- Cards enter with 180ms fade+slide-up; no other motion
+### 4.5 Approval Card (PayPal Gate)
+Distinctive operator checkpoint:
+- Warm amber background (`#FFFDF6`), subtle amber border (`#F1E4BE`), amber rail dot.
+- Buttons row: **Approve** (black pill button) · **Deny** (white pill button with neutral border).
+- Policy verification: Explicitly links to `policies.json` with dynamic 120s countdown.
+- Resolution: Instantly disables buttons on action, emits toast notification, and updates card badge to "approved by operator" or "denied by operator".
 
-### 4.5 Approval card (PayPal gate) — differs from normal card
-- Border: 1px `--warning`; top strip 3px `--warning`
-- Body shows the **exact** PayPal request JSON (amount, vendor, invoice id)
-- Buttons row: **Approve** (`--success` bg, white) · **Deny** (`--error` bg, white)
-- Caption (dim 12px): "Required by policy `policies.json` · approval binds to this request"
-- After click: buttons replaced by pill `approved by operator` / `denied by operator` + timestamp
-- Auto-timeout at 120s → card turns dim, pill `timed out` (SECURITY E7)
+### 4.6 Final Result Panel
+- Clean frosted container with uppercase "RESULT" label.
+- Structured Markdown summary highlighting invoice numbers, PayPal IDs, Jira ticket keys, and Slack timestamp.
+- Action buttons: **Run again** · **Copy summary** (clipboard API with toast feedback) · **Open backup video**.
 
-### 4.6 Status / toast messages
-- Top-right toasts, `--surface-2`, 1px border, radius 8px, auto-dismiss 5s
-- Types: success (green left-border), warning (amber), error (red, sticky until dismissed)
-
-### 4.7 Final answer block
-- `--surface`, 1px `--success` left-border 3px, radius 10px, padding 18px 20px
-- Heading "Result" (13px uppercase dim) + body 15px
-- Inline mono chips for IDs (PayPal `INV-…`, Jira `OPS-…`)
-- Footer row: **Run again** (ghost button) · **Copy summary** · link "open backup video"
-
-### 4.8 Empty & loading states
-- Empty: centered dim text "Run a prompt to watch the agent work" + tiny glyph
-- Loading: active step dot pulses; Run disabled; skeleton shimmer inside the newest card
-- Disconnected (E9): amber banner under header: "Connection lost — retry or use hotspot" +
-  **Retry** button
+### 4.7 Toast Feedback & Error Banner
+- **Toasts:** Floating white cards in top-right with status-colored indicator dots, soft shadow, 5s auto-dismiss.
+- **Connection Banner:** Warm amber banner under header if SSE disconnects, featuring **Retry** button and link to offline backup demo.
 
 ---
 
-## 5. Spacing & Layout Rules
+## 5. Animated Background & Vendored Tailwind Architecture
 
-- **Grid:** single column, `max-width: 900px`, centered, 24px side padding
-- **Spacing scale:** 4 / 8 / 12 / 16 / 24 / 32 — only these values
-- **Card padding:** 14px 16px · **card gap:** 16px · **section gap:** 24px
-- **Radius:** cards/buttons/inputs 8–10px · pills 999px · JSON blocks 6px
-- **Borders:** always 1px `--border`; emphasis uses a colored 3px left/top edge, never thick rings
-- **Shadows:** none (flat design; depth via surface steps)
-- **Breakpoints:** ≤640px — padding 12px, JSON collapses by default, buttons full-width,
-  header subtitle hidden. The UI must be readable when a judge opens it **on a phone**
-- **Focus:** 2px `--primary` outline, offset 2px — keyboard operable (Tab/Enter on Run, Approve)
-- **Motion:** only card entrance (180ms) + pending-pill pulse; `prefers-reduced-motion` disables both
+### 5.1 Ambient Background Pipeline
+To elevate visual appeal while preserving readability, an ambient background video runs behind the UI:
+- **Master Source:** `/data/api/tunnelmotions34854reflectionspace0001_0600.mp4` (4K 60fps, 217 MB, 10s loop). Kept outside the repository to prevent git bloat.
+- **Transcoded Web Asset:** Transcoded via `ffmpeg` to 1080p, 30fps, CRF 30, no audio, with web-optimized faststart headers:
+  ```bash
+  ffmpeg -y -v error -i /data/api/tunnelmotions34854reflectionspace0001_0600.mp4 \
+    -vf "scale=1920:-2,fps=30" -c:v libx264 -crf 30 -preset medium -an \
+    -movflags +faststart ui/assets/bg.mp4
+  ffmpeg -y -v error -i ui/assets/bg.mp4 -frames:v 1 -q:v 4 ui/assets/bg.jpg
+  ```
+  Output: `ui/assets/bg.mp4` (~4.3 MB, seamlessly looping) and `ui/assets/bg.jpg` (~49 KB instant poster fallback).
+- **Delivery:** Served directly through FastAPI's static file mount (`/static/assets/bg.mp4`).
+- **Layering & Readability:**
+  - `<video id="bgVideo">`: Fixed position, `inset: 0`, `z-index: -2`, `object-fit: cover`, subtly filtered (`filter: saturate(.8) brightness(1.12)`).
+  - `<div id="bgScrim">`: Fixed position, `inset: 0`, `z-index: -1`, with `background: rgba(250,250,250,0.76)` and `backdrop-filter: blur(28px) saturate(1.15)`.
+  - Ensures content panels (`rgba(255,255,255,0.92)`) float on a soft, frosted canvas with guaranteed text contrast.
+- **Battery & Accessibility:** Listens to `document.visibilitychange` to automatically pause playback when the browser tab is hidden. `@media (prefers-reduced-motion: reduce)` automatically hides the video element and disables entry animations.
+
+### 5.2 Vendored Tailwind Architecture
+To ensure the UI is robust in offline conference/demo venue environments:
+- Tailwind Play CDN runtime is vendored locally into `ui/vendor/tailwind.js` (~451 KB).
+- Loaded via `<script src="/static/vendor/tailwind.js"></script>`.
+- **Zero build step required:** No node, npm, webpack, or compiler needed. Edit `ui/index.html` and refresh.
+- 100% offline and venue wifi-safe (no external CDN network requests).
 
 ---
 

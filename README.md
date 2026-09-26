@@ -132,7 +132,7 @@ nothing · SSE replay has no duplicate cards · UI click-through of both Approve
 
 ```
 agent/     state · llm switch · swx wrapper · 7 graph nodes · approval gate
-server/    FastAPI + SSE          ui/     single-file trace UI (no build step)
+server/    FastAPI + SSE          ui/     single HTML + vendored Tailwind, no build
 seed/      demo invoices          scripts/ setup.sh · smoke_test.py
 tests/     mock E2E (graph + API) docs/    8 project docs + demo assets
 .swytchcode/  tooling.json + policies.json (committed evidence)
