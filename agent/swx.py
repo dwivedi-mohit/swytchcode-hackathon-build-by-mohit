@@ -20,6 +20,10 @@ from typing import Any, Optional
 from . import approvals  # noqa: F401  (keeps import graph simple for tooling)
 
 
+class _Fatal(RuntimeError):
+    """Non-transient call failure (validation/HTTP 4xx) — never retried."""
+
+
 def _env(name: str, default: str = "") -> str:
     return os.getenv(name, default).strip()
 
@@ -103,11 +107,48 @@ def execute(
             if key:
                 _idempotency_store[key] = body
             return {"ok": True, "body": body, "mode": "live", "error": ""}
+        except _Fatal as exc:  # 4xx/API rejection — retrying cannot help
+            return {"ok": False, "body": {}, "mode": "live", "error": str(exc)}
         except Exception as exc:  # noqa: BLE001
             last_error = f"{type(exc).__name__}: {exc}"
             if attempt == 1:
                 time.sleep(0.5)
     return {"ok": False, "body": {}, "mode": "live", "error": last_error}
+
+
+def _api_error(out: dict) -> str:
+    """swy exits 0 even on HTTP 4xx/5xx — inspect the envelope honestly (E5)."""
+    sc = out.get("status_code")
+    if isinstance(sc, int) and sc >= 400:
+        pass  # fall through to message extraction
+    elif out.get("error_category"):
+        pass
+    else:
+        return ""
+    data = out.get("data") if isinstance(out.get("data"), dict) else {}
+    msg = (
+        data.get("message")
+        or data.get("error_description")
+        or (data.get("error") if isinstance(data.get("error"), str) else "")
+        or (data.get("errorMessages") or [None])[0]
+        or (list((data.get("errors") or {}).values())[:1] or [None])[0]
+        or out.get("error_category")
+        or f"HTTP {sc}"
+    )
+    code = data.get("code") or ""
+    if isinstance(code, str) and code.endswith("_error"):
+        msg = data.get("message") or code
+    return f"API {sc or out.get('error_category')}: {msg}"
+
+
+def _unwrap(out: Any) -> Any:
+    """swy --json wraps payloads as {"data": …, "status_code": …, "request": …};
+    nodes consume the unwrapped payload (body.messages / body.id / body.ts)."""
+    if isinstance(out, dict) and "data" in out and (
+        "status_code" in out or "request" in out or "error_category" in out
+    ):
+        return out["data"]
+    return out
 
 
 def _live_execute(canonical_id: str, args: dict, headers: dict) -> dict:
@@ -124,7 +165,7 @@ def _live_execute(canonical_id: str, args: dict, headers: dict) -> dict:
 
             rt = Runtime()  # type: ignore[call-arg]
             result = rt.tools.execute(canonical_id, {"args": args, "headers": headers})
-            return result if isinstance(result, dict) else {"result": result}
+            return _unwrap(result) if isinstance(result, dict) else {"result": result}
         except ImportError:
             pass
 
@@ -144,11 +185,40 @@ def _live_execute(canonical_id: str, args: dict, headers: dict) -> dict:
             err += " — run ./scripts/setup.sh (swy get <provider>) first"
         if "Failed to fetch provider bundles" in err:
             err += " — registry unreachable; fetch bundles once with ./scripts/setup.sh"
-        raise RuntimeError(err)
-    out = json.loads(proc.stdout)
+        raise _Fatal(err)  # non-transient: no retry (E5)
+    try:
+        out = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise _Fatal(f"unparseable swy output: {exc}: {proc.stdout[:200]}") from exc
     if isinstance(out, dict) and out.get("_simulated"):  # --demo fallback path
         out["mode_note"] = "simulated by swy --demo"
-    return out
+        return out
+    if isinstance(out, dict):
+        api_err = _api_error(out)
+        if api_err:
+            raise _Fatal(f"{api_err} [{canonical_id}]")  # 4xx/5xx: don't blind-retry
+    payload = _unwrap(out)
+    payload_err = _payload_error(payload)
+    if payload_err:
+        raise _Fatal(f"API error: {payload_err} [{canonical_id}]")
+    return payload
+
+
+def _payload_error(payload: Any) -> str:
+    """HTTP-200-but-failed payloads: Slack {ok:false}, Notion {object:error}."""
+    if not isinstance(payload, dict):
+        return ""
+    if payload.get("ok") is False:
+        return str(payload.get("error") or "ok=false")
+    if payload.get("object") == "error" or str(payload.get("code", "")).endswith("_error"):
+        return str(payload.get("message") or payload.get("code"))
+    err = payload.get("error")
+    if isinstance(err, str) and err:
+        return err
+    msgs = payload.get("errorMessages")
+    if isinstance(msgs, list) and msgs:
+        return "; ".join(str(m) for m in msgs[:2])
+    return ""
 
 
 def live(toolkit: str) -> bool:

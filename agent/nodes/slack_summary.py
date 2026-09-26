@@ -1,6 +1,8 @@
 """slack_summary node — post a summary built from actual results, not the plan."""
 from __future__ import annotations
 
+import os
+
 from .. import swx
 from ..state import InvoiceState, new_trace_event
 from .base import add_error, record
@@ -45,31 +47,32 @@ def slack_summary_node(state: InvoiceState) -> dict:
     run_id = state.get("run_id", "")
     results = dict(state.get("results", {}))
     text = build_summary(state)
+    channel = os.getenv("SLACK_CHANNEL", "#finance-ops")
 
     call = swx.execute(
         "slack.chat.postmessage.create",
-        {"body": {"channel": "#finance-ops", "text": text}},
+        {"body": {"channel": channel, "text": text}},
         run_id=run_id, invoice_id="summary", write=True,
     )
     if call["ok"]:
         ev = new_trace_event(
             node="slack_summary",
-            reasoning="Summary composed from real PayPal/Jira/Notion responses and posted to #finance-ops.",
+            reasoning=f"Summary composed from real PayPal/Jira/Notion responses and posted to {channel}.",
             toolkit="slack", canonical_id="slack.chat.postmessage.create",
-            request={"channel": "#finance-ops", "text": text},
+            request={"channel": channel, "text": text},
             response=call["body"],
             decision="final answer quotes the posted summary",
             status="ok",
         )
         record(state, ev)
         results["slack"] = {"ts": call["body"].get("ts", ""), "text": text,
-                            "channel": call["body"].get("channel", "#finance-ops")}
+                            "channel": call["body"].get("channel", channel)}
     else:  # E8 / X9 — summary falls back to inline text
         ev = new_trace_event(
             node="slack_summary",
             reasoning=f"Slack post failed: {call['error']} — summary will render inline instead (X9).",
             toolkit="slack", canonical_id="slack.chat.postmessage.create",
-            request={"channel": "#finance-ops"}, response={"error": call["error"]},
+            request={"channel": channel}, response={"error": call["error"]},
             decision="inline fallback", status="failed",
         )
         record(state, ev)

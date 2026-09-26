@@ -58,7 +58,7 @@ def notion_log_node(state: InvoiceState) -> dict:
         inv = invoices[d["invoice_id"]]
         status, r = _status_for(inv["id"], d["label"], results)
         row = {
-            "parent": {"database_id": "ledgerpilot-ops-log"},
+            "parent": {"database_id": os.getenv("NOTION_DATA_SOURCE_ID", "ledgerpilot-ops-log")},
             "properties": {
                 "Invoice ID": inv["id"],
                 "Vendor": inv["vendor"],
@@ -76,7 +76,7 @@ def notion_log_node(state: InvoiceState) -> dict:
                            invoice_id=inv["id"], write=True)
         if call["ok"]:
             created += 1
-            pages[inv["id"]] = call["body"].get("page_id", "")
+            pages[inv["id"]] = call["body"].get("page_id") or call["body"].get("id", "")
         else:  # E8
             errors.append(f"Notion row for #{inv['id']} failed: {call['error']}")
 

@@ -1,6 +1,8 @@
 """jira_escalate node — disputed invoices become tracked issues (PayPal skipped)."""
 from __future__ import annotations
 
+import os
+
 from .. import swx
 from ..state import InvoiceState, new_trace_event
 from .base import add_error, record
@@ -17,7 +19,7 @@ def jira_escalate_node(state: InvoiceState) -> dict:
         priority = "High" if (inv.get("amount") or 0) > 50000 else "Medium"
         fields = {
             "fields": {
-                "project": {"key": "OPS"},
+                "project": {"key": os.getenv("JIRA_PROJECT_KEY", "OPS")},
                 "summary": f"Dispute: {inv['vendor']} #{inv['id']}",
                 "issuetype": {"name": "Bug"},
                 "priority": {"name": priority},

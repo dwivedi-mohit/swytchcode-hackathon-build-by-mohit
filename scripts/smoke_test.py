@@ -6,20 +6,32 @@ Floor: exits 1 if fewer than 3 toolkits pass (rubric requirement: >=3).
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+try:  # NOTION_DATA_SOURCE_ID / SLACK_CHANNEL / JIRA_PROJECT_KEY live in .env
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 from agent import swx  # noqa: E402
 
 CHECKS = [
     ("gmail",   "gmail.user.messages.get",      {"userId": "me", "q": "is:unread", "maxResults": 1}, False),
     ("paypal",  "invoices.invoicing.invoices.list",     {},                                   False),
-    ("jira",    "jira.api.search.create1",       {"body": {"jql": "order by created DESC", "maxResults": 1}}, False),
-    ("notion",  "notion.query.create",   {"data_source_id": "ledgerpilot-ops-log"}, False),
-    ("slack",   "slack.chat.postmessage.create",   {"body": {"channel": "#finance-ops", "text": "LedgerPilot smoke test ✅"}}, True),
+    ("jira",    "jira.api.jql.list",
+                {"jql": "created >= -1d order by created DESC", "maxResults": 1, "fields": "key"}, False),
+    ("notion",  "notion.query.create",
+                {"data_source_id": os.getenv("NOTION_DATA_SOURCE_ID", "ledgerpilot-ops-log")}, False),
+    ("slack",   "slack.chat.postmessage.create",
+                {"body": {"channel": os.getenv("SLACK_CHANNEL", "#finance-ops"),
+                          "text": "LedgerPilot smoke test ✅"}}, True),
 ]
 FLOOR = 3
 
