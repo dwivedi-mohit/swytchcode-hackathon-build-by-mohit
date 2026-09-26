@@ -1954,6 +1954,603 @@
       "summary": "Create issue",
       "type": "method"
     },
+    "jira.api.jql.list": {
+      "desc": "Searches for issues using [JQL](https://confluence.atlassian.com/x/egORLQ). Recent updates might not be immediately visible in the returned search results. If you need [read-after-write](https://developer.atlassian.com/cloud/jira/platform/search-and-reconcile/) consistency, you can utilize the `reconcileIssues` parameter to ensure stronger consistency assurances. This operation can be accessed anonymously.\n\nIf the JQL query expression is too large to be encoded as a query parameter, use the [POST](#api-rest-api-3-search-post) version of this resource.\n\n**[Permissions](#permissions) required:** Issues are included in the response where the user has:\n\n *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.\n *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.",
+      "inputs": [
+        {
+          "jql": {
+            "EXAMPLE": "project = HSP",
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "nextPageToken": {
+            "EXAMPLE": "\u003cstring\u003e",
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "maxResults": {
+            "DEFAULT": 50,
+            "EXAMPLE": 114,
+            "FORMAT": "int32",
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "fields": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "[]STRING"
+          }
+        },
+        {
+          "expand": {
+            "EXAMPLE": "\u003cstring\u003e",
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "properties": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "[]STRING"
+          }
+        },
+        {
+          "fieldsByKeys": {
+            "DEFAULT": false,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "failFast": {
+            "DEFAULT": false,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "reconcileIssues": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "[]INT"
+          }
+        }
+      ],
+      "integration": "Jira.jira@v1",
+      "method_hash": "bcf25a67719792724e71f6ebacc1090c14037f0a1b4b4ac0c62dd8f6d9eecaf4",
+      "output": {
+        "schema": {
+          "properties": {
+            "isLast": {
+              "required": false,
+              "type": "boolean"
+            },
+            "issues": {
+              "items": {
+                "properties": {
+                  "changelog": {
+                    "properties": {
+                      "histories": {
+                        "items": {
+                          "properties": {
+                            "author": {
+                              "properties": {
+                                "accountId": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "accountType": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "active": {
+                                  "required": false,
+                                  "type": "boolean"
+                                },
+                                "avatarUrls": {
+                                  "properties": {},
+                                  "type": "object"
+                                },
+                                "displayName": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "emailAddress": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "key": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "self": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "timeZone": {
+                                  "required": false,
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "created": {
+                              "required": false,
+                              "type": "TIMESTAMP"
+                            },
+                            "historyMetadata": {
+                              "properties": {
+                                "activityDescription": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "activityDescriptionKey": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "actor": {
+                                  "properties": {},
+                                  "type": "object"
+                                },
+                                "cause": {
+                                  "properties": {},
+                                  "type": "object"
+                                },
+                                "description": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "descriptionKey": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "emailDescription": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "emailDescriptionKey": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "extraData": {
+                                  "required": false,
+                                  "type": "map[STRING]STRING"
+                                },
+                                "generator": {
+                                  "properties": {},
+                                  "type": "object"
+                                },
+                                "type": {
+                                  "required": false,
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "id": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "items": {
+                              "items": {
+                                "properties": {
+                                  "field": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "fieldId": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "fieldtype": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "from": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "fromString": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "to": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "toString": {
+                                    "required": false,
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "required": false,
+                              "type": "array"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "required": false,
+                        "type": "array"
+                      },
+                      "maxResults": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "startAt": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "total": {
+                        "required": false,
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "editmeta": {
+                    "properties": {
+                      "fields": {
+                        "required": false,
+                        "type": "map[STRING]ANY"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "expand": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "fields": {
+                    "required": false,
+                    "type": "map[STRING]STRUCT(IssueBean_fields_Value)"
+                  },
+                  "fieldsToInclude": {
+                    "properties": {
+                      "actuallyIncluded": {
+                        "required": false,
+                        "type": "[]STRING"
+                      },
+                      "excluded": {
+                        "required": false,
+                        "type": "[]STRING"
+                      },
+                      "included": {
+                        "required": false,
+                        "type": "[]STRING"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "id": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "key": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "names": {
+                    "required": false,
+                    "type": "map[STRING]STRING"
+                  },
+                  "operations": {
+                    "properties": {
+                      "linkGroups": {
+                        "items": {
+                          "properties": {
+                            "groups": {
+                              "items": {
+                                "properties": {},
+                                "type": "object"
+                              },
+                              "required": false,
+                              "type": "array"
+                            },
+                            "header": {
+                              "properties": {
+                                "href": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "iconClass": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "styleClass": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "weight": {
+                                  "required": false,
+                                  "type": "integer"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "id": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "links": {
+                              "items": {
+                                "properties": {
+                                  "href": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "iconClass": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "label": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "styleClass": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "required": false,
+                                    "type": "string"
+                                  },
+                                  "weight": {
+                                    "required": false,
+                                    "type": "integer"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "required": false,
+                              "type": "array"
+                            },
+                            "styleClass": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "weight": {
+                              "required": false,
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "required": false,
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "properties": {
+                    "required": false,
+                    "type": "map[STRING]ANY"
+                  },
+                  "renderedFields": {
+                    "required": false,
+                    "type": "map[STRING]ANY"
+                  },
+                  "schema": {
+                    "required": false,
+                    "type": "map[STRING]ANY"
+                  },
+                  "self": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "transitions": {
+                    "items": {
+                      "properties": {
+                        "expand": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "fields": {
+                          "required": false,
+                          "type": "map[STRING]ANY"
+                        },
+                        "hasScreen": {
+                          "required": false,
+                          "type": "boolean"
+                        },
+                        "id": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "isAvailable": {
+                          "required": false,
+                          "type": "boolean"
+                        },
+                        "isConditional": {
+                          "required": false,
+                          "type": "boolean"
+                        },
+                        "isGlobal": {
+                          "required": false,
+                          "type": "boolean"
+                        },
+                        "isInitial": {
+                          "required": false,
+                          "type": "boolean"
+                        },
+                        "looped": {
+                          "required": false,
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "to": {
+                          "properties": {
+                            "description": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "iconUrl": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "id": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "name": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "scope": {
+                              "properties": {
+                                "project": {
+                                  "properties": {},
+                                  "type": "object"
+                                },
+                                "type": {
+                                  "required": false,
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "self": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "statusCategory": {
+                              "properties": {
+                                "colorName": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "required": false,
+                                  "type": "integer"
+                                },
+                                "key": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "required": false,
+                                  "type": "string"
+                                },
+                                "self": {
+                                  "required": false,
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "required": false,
+                    "type": "array"
+                  },
+                  "versionedRepresentations": {
+                    "required": false,
+                    "type": "map[STRING]ANY"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "names": {
+              "required": false,
+              "type": "map[STRING]STRING"
+            },
+            "nextPageToken": {
+              "required": false,
+              "type": "string"
+            },
+            "schema": {
+              "required": false,
+              "type": "map[STRING]ANY"
+            },
+            "warnings": {
+              "items": {
+                "properties": {
+                  "details": {
+                    "properties": {
+                      "actual": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "arguments": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "clause": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "limit": {
+                        "required": false,
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "message": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "type": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Search for issues using JQL enhanced search (GET)",
+      "type": "method"
+    },
     "jira.api.myself.list": {
       "desc": "Returns details for the current user.\n\n**[Permissions](#permissions) required:** Permission to access Jira.",
       "inputs": [
@@ -4177,6 +4774,81 @@
         "status": 200
       },
       "summary": "Sends a message to a channel.",
+      "type": "method"
+    },
+    "slack.conversations.list.list": {
+      "desc": "Lists all channels in a Slack team.",
+      "inputs": [
+        {
+          "token": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "exclude_archived": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "types": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "limit": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "cursor": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Slack.slack@1.7.0",
+      "method_hash": "7339356ba4def8ac70b52d45ddbd05d1c46e02cb4a37a4b800e326e6c0becf04",
+      "output": {
+        "schema": {
+          "properties": {
+            "channels": {
+              "required": true,
+              "type": "[]ANY"
+            },
+            "ok": {
+              "required": true,
+              "type": "boolean"
+            },
+            "response_metadata": {
+              "properties": {
+                "next_cursor": {
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "next_cursor"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "channels",
+            "ok"
+          ]
+        },
+        "status": 200
+      },
+      "summary": "Lists all channels in a Slack team.",
       "type": "method"
     }
   },
