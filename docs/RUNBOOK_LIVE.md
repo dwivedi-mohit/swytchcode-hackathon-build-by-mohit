@@ -54,6 +54,7 @@ spec are marked *illustrative* until this step passes.
 ```bash
 git pull && source .venv/bin/activate
 ./scripts/setup.sh && swy auth status
+./scripts/auth_connect_all.sh        # YOUR terminal: browser opens per provider (gmail→slack→notion→jira→paypal)
 python scripts/smoke_test.py            # Gate B: ≥3 PASS on venue wifi
 ./scripts/verify_canonical_ids.sh       # Gate B IDs: 7/7 PASS
 # Kernel-policy demo (30s, judge-facing) — both commands print the guard firing:
