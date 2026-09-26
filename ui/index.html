@@ -32,10 +32,31 @@ button{font-family:inherit}
   display:none;
 }
 
-/* ---------- header ---------- */
+/* ---------- floating buttons & header ---------- */
+.top-left-btn{
+  position:fixed; top:12px; left:16px; z-index:35;
+  width:42px; height:42px; border-radius:12px;
+  background:rgba(255,255,255,.15);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,.28);
+  border-top:1px solid rgba(255,255,255,.55);
+  color:#FFFFFF; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+  box-shadow:inset 0 1px 1px 0 rgba(255,255,255,.5), inset 0 -1px 1px 0 rgba(0,0,0,.15), 0 8px 32px rgba(0,0,0,.35);
+  transition:all .2s cubic-bezier(.16,1,.3,1);
+}
+.top-left-btn:hover{
+  background:rgba(255,255,255,.28);
+  border-color:rgba(255,255,255,.6);
+  transform:scale(1.05);
+  box-shadow:0 0 20px rgba(192,132,252,.5), 0 8px 32px rgba(0,0,0,.45);
+}
+
 header{
   position:sticky; top:12px; z-index:20;
-  max-width:1200px; margin:12px auto 0; width:calc(100% - 32px);
+  max-width:760px; margin:12px auto 0; width:calc(100% - 130px);
   background:rgba(255,255,255,.15);
   -webkit-backdrop-filter:blur(24px) saturate(180%);
   backdrop-filter:blur(24px) saturate(180%);
@@ -43,31 +64,107 @@ header{
   border-top:1px solid rgba(255,255,255,.55);
   border-radius:14px;
   display:flex; align-items:center; justify-content:space-between;
-  padding:0 22px; height:50px;
+  padding:0 20px; height:46px;
   box-shadow:inset 0 1px 1px 0 rgba(255,255,255,.5), inset 0 -1px 1px 0 rgba(0,0,0,.15), 0 8px 32px rgba(0,0,0,.35);
 }
-.brand{display:flex; align-items:center; gap:12px; min-width:0}
+.brand{display:flex; align-items:center; gap:8px; min-width:0}
 .brand h1{
   font-size:15px; font-weight:700; margin:0; letter-spacing:-.01em;
   color:#FFFFFF; text-shadow:0 1px 3px rgba(0,0,0,.7);
 }
+.brand-tag{
+  font-size:11px; color:rgba(255,255,255,.8); font-weight:500;
+  background:rgba(255,255,255,.12); padding:2px 7px; border-radius:6px;
+  border:1px solid rgba(255,255,255,.15);
+}
 .header-actions{display:flex; align-items:center; gap:8px}
-.toolkits-strip{display:flex; align-items:center; gap:6px}
-.tk-badge{
-  font-size:11px; padding:3px 9px; border-radius:999px;
-  background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.18);
-  color:#E0E0E0; display:inline-flex; align-items:center; gap:5px;
-  transition:all .15s ease; user-select:none; font-weight:500;
+#statusPill{
+  font-size:11.5px; padding:3px 10px; border-radius:999px;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22);
+  color:#E0E0E0; font-weight:500; user-select:none;
+  display:inline-flex; align-items:center; gap:5px;
 }
-.tk-badge:hover{background:rgba(255,255,255,.22); color:#FFF; border-color:rgba(255,255,255,.4)}
+#statusPill.ok{color:#4ADE80; border-color:rgba(74,222,128,.35); background:rgba(34,197,94,.15)}
+#statusPill.warn{color:#FBBF24; border-color:rgba(251,191,36,.35); background:rgba(245,158,11,.15)}
+
+/* ---------- bottom-left tools popover & button ---------- */
+.bottom-left-btn{
+  position:fixed; bottom:24px; left:16px; z-index:35;
+  width:44px; height:44px; border-radius:14px;
+  background:rgba(255,255,255,.15);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,.28);
+  border-top:1px solid rgba(255,255,255,.55);
+  color:#FFFFFF; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 1px 0 rgba(255,255,255,.5), inset 0 -1px 1px 0 rgba(0,0,0,.15), 0 8px 32px rgba(0,0,0,.35);
+  transition:all .2s cubic-bezier(.16,1,.3,1);
+}
+.bottom-left-btn:hover{
+  background:rgba(255,255,255,.28);
+  border-color:rgba(255,255,255,.6);
+  transform:scale(1.05);
+  box-shadow:0 0 20px rgba(192,132,252,.5), 0 8px 32px rgba(0,0,0,.45);
+}
+.bottom-left-btn.active{
+  background:rgba(168,85,247,.3);
+  border-color:#C084FC;
+  box-shadow:0 0 20px rgba(168,85,247,.6);
+}
+.gear-icon{font-size:20px; line-height:1; transition:transform .3s ease}
+.bottom-left-btn:hover .gear-icon, .bottom-left-btn.active .gear-icon{
+  transform:rotate(60deg);
+}
+.tools-dot{
+  position:absolute; top:8px; right:8px; width:7px; height:7px;
+  border-radius:50%; background:#22C55E; box-shadow:0 0 8px #22C55E;
+}
+
+.tools-popover{
+  position:fixed; bottom:78px; left:16px; z-index:42;
+  width:310px; max-width:calc(100vw - 32px);
+  background:rgba(14,14,26,.94);
+  -webkit-backdrop-filter:blur(30px) saturate(190%);
+  backdrop-filter:blur(30px) saturate(190%);
+  border:1px solid rgba(255,255,255,.2);
+  border-top:1px solid rgba(255,255,255,.45);
+  border-radius:18px;
+  padding:16px;
+  color:#E5E5E5;
+  box-shadow:0 18px 48px rgba(0,0,0,.65), inset 0 1px 1px rgba(255,255,255,.3);
+  transform:translateY(12px) scale(0.96);
+  opacity:0; pointer-events:none;
+  transition:all .22s cubic-bezier(.16,1,.3,1);
+}
+.tools-popover.open{
+  transform:translateY(0) scale(1);
+  opacity:1; pointer-events:auto;
+}
+.popover-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,.1);
+  margin-bottom:10px;
+}
+.popover-title{font-size:13px; font-weight:650; color:#FFF}
+.popover-badge{
+  font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:999px;
+  background:rgba(34,197,94,.18); color:#4ADE80; border:1px solid rgba(34,197,94,.35);
+}
+.popover-tools-list{display:flex; flex-direction:column; gap:4px}
+.pop-tool-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:6px 8px; border-radius:8px; transition:background .12s ease;
+}
+.pop-tool-row:hover{background:rgba(255,255,255,.07)}
+.pop-tool-left{display:flex; align-items:center; gap:8px}
+.pop-tool-name{font-size:12.5px; font-weight:600; color:#FFF}
+.pop-tool-desc{font-size:11px; color:#888}
 .tk-dot{width:6px; height:6px; border-radius:50%; background:#22C55E; box-shadow:0 0 6px #22C55E}
-.icon-btn{
-  background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.2);
-  color:#FFF; border-radius:9px; width:32px; height:32px;
-  display:inline-flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:13px; transition:all .15s ease;
-}
-.icon-btn:hover{background:rgba(255,255,255,.22); border-color:rgba(255,255,255,.5)}
+.popover-divider{height:1px; background:rgba(255,255,255,.1); margin:10px 0}
+.popover-settings{display:flex; flex-direction:column; gap:8px; font-size:12px; color:#888}
+.pop-setting-row{display:flex; justify-content:space-between; align-items:center}
+.pop-setting-val{color:#DDD; font-family:ui-monospace,monospace; font-size:11px; background:rgba(255,255,255,.1); padding:2px 6px; border-radius:5px}
 
 /* ---------- sidebar ---------- */
 #sidebarBackdrop{
@@ -461,20 +558,86 @@ pre{
   </div>
 </aside>
 
+<!-- Top-Left Sidebar Trigger Button -->
+<button id="sidebarToggleBtn" class="top-left-btn" onclick="toggleSidebar(true)" title="Open Run History (☰)">
+  <span>☰</span>
+</button>
+
+<!-- Bottom-Left Toolkits & Settings Trigger & Popover -->
+<div id="toolsPopover" class="tools-popover" role="dialog" aria-label="Toolkits & Settings">
+  <div class="popover-head">
+    <div class="flex items-center gap-2">
+      <span style="font-size:14px">⚙️</span>
+      <span class="popover-title">Swytchcode Toolkits</span>
+    </div>
+    <span class="popover-badge">5 Active</span>
+  </div>
+  <div class="popover-tools-list">
+    <div class="pop-tool-row">
+      <div class="pop-tool-left">
+        <span class="tk-dot"></span>
+        <span class="pop-tool-name">✉️ Gmail</span>
+      </div>
+      <span class="pop-tool-desc">Invoices intake</span>
+    </div>
+    <div class="pop-tool-row">
+      <div class="pop-tool-left">
+        <span class="tk-dot"></span>
+        <span class="pop-tool-name">💳 PayPal</span>
+      </div>
+      <span class="pop-tool-desc">Automated chase</span>
+    </div>
+    <div class="pop-tool-row">
+      <div class="pop-tool-left">
+        <span class="tk-dot"></span>
+        <span class="pop-tool-name">🎫 Jira</span>
+      </div>
+      <span class="pop-tool-desc">Dispute tickets</span>
+    </div>
+    <div class="pop-tool-row">
+      <div class="pop-tool-left">
+        <span class="tk-dot"></span>
+        <span class="pop-tool-name">📓 Notion</span>
+      </div>
+      <span class="pop-tool-desc">Audit ops log</span>
+    </div>
+    <div class="pop-tool-row">
+      <div class="pop-tool-left">
+        <span class="tk-dot"></span>
+        <span class="pop-tool-name">💬 Slack</span>
+      </div>
+      <span class="pop-tool-desc">Team notifications</span>
+    </div>
+  </div>
+  <div class="popover-divider"></div>
+  <div class="popover-settings">
+    <div class="pop-setting-row">
+      <span>Audio Feedback</span>
+      <button class="ghost" style="padding:2px 8px;font-size:11px" onclick="toggleSound()"><span id="soundLabelBottom">🔊 ON</span></button>
+    </div>
+    <div class="pop-setting-row">
+      <span>LLM Provider</span>
+      <span class="pop-setting-val">Gemini ➔ Groq</span>
+    </div>
+    <div class="pop-setting-row">
+      <span>PayPal Gate</span>
+      <span class="pop-setting-val">policies.json (120s)</span>
+    </div>
+  </div>
+</div>
+
+<button id="toolsSettingsBtn" class="bottom-left-btn" onclick="toggleToolsPopover(event)" title="Toolkits & Settings (⚙️)">
+  <span class="gear-icon">⚙️</span>
+  <span class="tools-dot"></span>
+</button>
+
 <header>
   <div class="brand">
-    <button class="icon-btn" onclick="toggleSidebar(true)" title="Open History & Settings">☰</button>
     <h1>LedgerPilot</h1>
+    <span class="brand-tag">AI Revenue Ops</span>
   </div>
   <div class="header-actions">
-    <div class="toolkits-strip">
-      <span class="tk-badge" title="Gmail: Invoices search & intake"><span class="tk-dot"></span>✉️ Gmail</span>
-      <span class="tk-badge" title="PayPal: Automated draft & invoice chase"><span class="tk-dot"></span>💳 PayPal</span>
-      <span class="tk-badge" title="Jira: Dispute escalation"><span class="tk-dot"></span>🎫 Jira</span>
-      <span class="tk-badge" title="Notion: Revenue ops system of record"><span class="tk-dot"></span>📓 Notion</span>
-      <span class="tk-badge" title="Slack: Real-time team notifications"><span class="tk-dot"></span>💬 Slack</span>
-    </div>
-    <button class="icon-btn" onclick="toggleSound()" title="Toggle Sound Feedback"><span id="soundIcon">🔊</span></button>
+    <span id="statusPill" class="ok">● 5 toolkits connected</span>
   </div>
 </header>
 
@@ -591,8 +754,10 @@ class SoundFX {
   updateUI() {
     const icon = document.getElementById('soundIcon');
     const label = document.getElementById('soundLabel');
+    const labelBottom = document.getElementById('soundLabelBottom');
     if (icon) icon.textContent = this.enabled ? '🔊' : '🔇';
     if (label) label.textContent = this.enabled ? '🔊 ON' : '🔇 OFF';
+    if (labelBottom) labelBottom.textContent = this.enabled ? '🔊 ON' : '🔇 OFF';
   }
   playTone(freq, duration, type='sine', gainVal=0.1) {
     if (!this.enabled) return;
@@ -629,6 +794,39 @@ class SoundFX {
 }
 const sound = new SoundFX();
 function toggleSound() { sound.toggle(); }
+
+/* ---------- Toolkits Popover (Bottom-Left) ---------- */
+function toggleToolsPopover(event) {
+  if (event) event.stopPropagation();
+  const pop = document.getElementById('toolsPopover');
+  const btn = document.getElementById('toolsSettingsBtn');
+  if (!pop) return;
+  const isOpen = pop.classList.toggle('open');
+  if (btn) btn.classList.toggle('active', isOpen);
+}
+
+document.addEventListener('click', (e) => {
+  const pop = document.getElementById('toolsPopover');
+  const btn = document.getElementById('toolsSettingsBtn');
+  if (pop && pop.classList.contains('open')) {
+    if (!pop.contains(e.target) && (!btn || !btn.contains(e.target))) {
+      pop.classList.remove('open');
+      if (btn) btn.classList.remove('active');
+    }
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const pop = document.getElementById('toolsPopover');
+    const btn = document.getElementById('toolsSettingsBtn');
+    if (pop && pop.classList.contains('open')) {
+      pop.classList.remove('open');
+      if (btn) btn.classList.remove('active');
+    }
+    toggleSidebar(false);
+  }
+});
 
 /* ---------- Sidebar & Run History ---------- */
 function toggleSidebar(open) {
